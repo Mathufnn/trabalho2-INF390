@@ -1,8 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <array>
-#include <fstream>
-#include <string>
+#include <bits/stdc++.h>
 using namespace std;
 
 struct vertice
@@ -29,9 +25,17 @@ int main()
   ifstream objeto;
   objeto.open("submarine.obj");
   string linha;
+
   while(!objeto.eof())
   {
     getline(objeto, linha);
+    stringstream s(linha);
+    string dado;
+
+    while(s >> dado)
+    {
+      cout << dado << endl;
+    }
     
     cout << linha << endl;
   }
