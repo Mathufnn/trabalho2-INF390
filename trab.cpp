@@ -40,10 +40,10 @@ vector<string> quebraString(string str)
   return tokens;
 }
 
-int main()
+objeto3d leObjeto(string arquivo)
 {
   ifstream objeto;
-  objeto.open("submarine_triangulated.obj");
+  objeto.open(arquivo);
   string linha;
   objeto3d obj;
   int contadorVertices = 0; // numero do vertice, usado para indexar vertices
@@ -57,7 +57,7 @@ int main()
     {
       vertice v;
 
-      v.x = atof(tokens[1].c_str());
+      v.x = atof(tokens[1].c_str());  // transforma string em float
       v.y = atof(tokens[2].c_str());
       v.z = atof(tokens[3].c_str());
       v.id = contadorVertices;
@@ -69,7 +69,7 @@ int main()
     {
       face f;
 
-      float v1 = atoi(tokens[1].c_str());
+      float v1 = atoi(tokens[1].c_str()); // transforma string em int
       float v2 = atoi(tokens[4].c_str());
       float v3 = atoi(tokens[7].c_str());
 
@@ -84,19 +84,32 @@ int main()
     }
   }
 
-  // for(int i = 0; i < 10; i++) // imprime os vertices
-  // {
-  //   cout << obj.vertices[i].id << " " << obj.vertices[i].x << " " << obj.vertices[i].y
-  //   << " " << obj.vertices[i].x << endl;
-  // }
+  return obj;
+}
 
-  // for(int i = 0; i < 10; i++) // imprime as faces
-  // {
-  //   cout << obj.faces[i].vert1.id << " " << obj.faces[i].vert1.x << " "
-  //   << obj.faces[i].vert1.y << " " << obj.faces[i].vert1.z << "  //  "
-  //   << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " "
-  //   << obj.faces[i].vert2.y << " " << obj.faces[i].vert2.z << "  //  "
-  //   << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " "
-  //   << obj.faces[i].vert3.y << " " << obj.faces[i].vert3.z << endl;
-  // }
+void imprimeObjeto(objeto3d obj)
+{
+  for(int i = 0; i < 10; i++) // imprime os vertices
+  {
+    cout << obj.vertices[i].id << " " << obj.vertices[i].x << " " << obj.vertices[i].y
+    << " " << obj.vertices[i].x << endl;
+  }
+
+  for(int i = 0; i < 10; i++) // imprime as faces
+  {
+    cout << obj.faces[i].vert1.id << " " << obj.faces[i].vert1.x << " "
+    << obj.faces[i].vert1.y << " " << obj.faces[i].vert1.z << "  //  "
+    << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " "
+    << obj.faces[i].vert2.y << " " << obj.faces[i].vert2.z << "  //  "
+    << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " "
+    << obj.faces[i].vert3.y << " " << obj.faces[i].vert3.z << endl;
+  }
+}
+
+int main()
+{
+  objeto3d obj;
+  obj = leObjeto("submarine_triangulated.obj");
+
+  imprimeObjeto(obj);
 }
