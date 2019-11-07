@@ -47,7 +47,7 @@ int main()
   string linha;
   objeto3d obj;
   int contadorVertices = 0; // numero do vertice, usado para indexar vertices
-  
+
   while (getline(objeto, linha))
   {
     vector<string> tokens;
@@ -82,22 +82,21 @@ int main()
 
       obj.faces.push_back(f);
     }
-    
   }
 
   // for(int i = 0; i < 10; i++) // imprime os vertices
   // {
-  //   cout << obj.vertices[i].id << " " << obj.vertices[i].x << " " << obj.vertices[i].y 
+  //   cout << obj.vertices[i].id << " " << obj.vertices[i].x << " " << obj.vertices[i].y
   //   << " " << obj.vertices[i].x << endl;
   // }
 
   // for(int i = 0; i < 10; i++) // imprime as faces
   // {
-  //   cout << obj.faces[i].vert1.id << " " << obj.faces[i].vert1.x << " " 
+  //   cout << obj.faces[i].vert1.id << " " << obj.faces[i].vert1.x << " "
   //   << obj.faces[i].vert1.y << " " << obj.faces[i].vert1.z << "  //  "
-  //   << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " " 
+  //   << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " "
   //   << obj.faces[i].vert2.y << " " << obj.faces[i].vert2.z << "  //  "
-  //   << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " " 
+  //   << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " "
   //   << obj.faces[i].vert3.y << " " << obj.faces[i].vert3.z << endl;
   // }
 }
