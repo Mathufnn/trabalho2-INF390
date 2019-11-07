@@ -2,3 +2,4 @@ http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
 https://stackoverflow.com/questions/19883715/what-is-the-best-way-to-split-string-c
 https://www.geeksforgeeks.org/getline-string-c/
 https://free3d.com/3d-models/submarine
+https://www.ntu.edu.sg/home/ehchua/programming/opengl/CG_Examples.html - piramide e coisas em 3d

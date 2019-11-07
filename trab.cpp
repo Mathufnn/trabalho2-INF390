@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
+#include <GL/glut.h> // GLUT, include glu.h and gl.h
 using namespace std;
+
+// Coisas do opengl
 
 struct vertice
 {
@@ -57,7 +60,7 @@ objeto3d leObjeto(string arquivo)
     {
       vertice v;
 
-      v.x = atof(tokens[1].c_str());  // transforma string em float
+      v.x = atof(tokens[1].c_str()); // transforma string em float
       v.y = atof(tokens[2].c_str());
       v.z = atof(tokens[3].c_str());
       v.id = contadorVertices;
@@ -89,27 +92,93 @@ objeto3d leObjeto(string arquivo)
 
 void imprimeObjeto(objeto3d obj)
 {
-  for(int i = 0; i < 10; i++) // imprime os vertices
+  for (int i = 0; i < 10; i++) // imprime os vertices
   {
     cout << obj.vertices[i].id << " " << obj.vertices[i].x << " " << obj.vertices[i].y
-    << " " << obj.vertices[i].x << endl;
+         << " " << obj.vertices[i].x << endl;
   }
 
-  for(int i = 0; i < 10; i++) // imprime as faces
+  for (int i = 0; i < 10; i++) // imprime as faces
   {
     cout << obj.faces[i].vert1.id << " " << obj.faces[i].vert1.x << " "
-    << obj.faces[i].vert1.y << " " << obj.faces[i].vert1.z << "  //  "
-    << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " "
-    << obj.faces[i].vert2.y << " " << obj.faces[i].vert2.z << "  //  "
-    << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " "
-    << obj.faces[i].vert3.y << " " << obj.faces[i].vert3.z << endl;
+         << obj.faces[i].vert1.y << " " << obj.faces[i].vert1.z << "  //  "
+         << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " "
+         << obj.faces[i].vert2.y << " " << obj.faces[i].vert2.z << "  //  "
+         << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " "
+         << obj.faces[i].vert3.y << " " << obj.faces[i].vert3.z << endl;
   }
 }
 
-int main()
-{
-  objeto3d obj;
-  obj = leObjeto("submarine_triangulated.obj");
+char title[] = "3D Shapes";
+objeto3d obj = leObjeto("submarine_triangulated.obj");
 
-  imprimeObjeto(obj);
+void initGL()
+{
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);              // Set background color to black and opaque
+  glClearDepth(1.0f);                                // Set background depth to farthest
+  glEnable(GL_DEPTH_TEST);                           // Enable depth testing for z-culling
+  glDepthFunc(GL_LEQUAL);                            // Set the type of depth-test
+  glShadeModel(GL_SMOOTH);                           // Enable smooth shading
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
+}
+
+
+
+void display()
+{
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+  glMatrixMode(GL_MODELVIEW);                         // To operate on model-view matrix
+
+  glLoadIdentity();                // Reset the model-view matrix
+  glTranslatef(0.0f, 0.0f, -6.0f); // Move left and into the screen
+
+  glRotatef(45,1,0,0);
+  glBegin(GL_TRIANGLES);
+  for (int i = 0; i < obj.faces.size(); i++)
+  {
+    glColor3f(1.0f, 0.0f, 0.0f); // Red
+
+    glVertex3f(obj.faces[i].vert1.x / 5000, obj.faces[i].vert1.y / 5000, obj.faces[i].vert1.z / 5000);
+    glVertex3f(obj.faces[i].vert2.x / 5000, obj.faces[i].vert2.y / 5000, obj.faces[i].vert2.z / 5000);
+    glVertex3f(obj.faces[i].vert3.x / 5000, obj.faces[i].vert3.y / 5000, obj.faces[i].vert3.z / 5000);
+  }
+
+  glEnd();
+
+  glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
+}
+
+void reshape(GLsizei width, GLsizei height)
+{ // GLsizei for non-negative integer
+  // Compute aspect ratio of the new window
+  if (height == 0)
+    height = 1; // To prevent divide by 0
+  GLfloat aspect = (GLfloat)width / (GLfloat)height;
+
+  // Set the viewport to cover the new window
+  glViewport(0, 0, width, height);
+
+  // Set the aspect ratio of the clipping volume to match the viewport
+  glMatrixMode(GL_PROJECTION); // To operate on the Projection matrix
+  glLoadIdentity();            // Reset
+  // Enable perspective projection with fovy, aspect, zNear and zFar
+  gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+}
+
+// Terminando coisas do opengl
+
+int main(int argc, char **argv)
+{
+  glutInit(&argc, argv);            // Initialize GLUT
+  glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
+  glutInitWindowSize(640, 480);     // Set the window's initial width & height
+  glutInitWindowPosition(50, 50);   // Position the window's initial top-left corner
+  glutCreateWindow(title);          // Create window with the given title
+  glutDisplayFunc(display);         // Register callback handler for window re-paint event
+  glutReshapeFunc(reshape);         // Register callback handler for window re-size event
+  initGL();                         // Our own OpenGL initialization
+  glutMainLoop();                   // Enter the infinite event-processing loop
+  return 0;
+  //
+  //imprimeObjeto(obj);
 }
