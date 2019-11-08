@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include <GL/glut.h> // GLUT, include glu.h and gl.h
+#include <GL/glut.h> // compilar com -lGL -lGLU -lglut
 using namespace std;
 
 // Coisas do opengl
@@ -7,7 +7,7 @@ using namespace std;
 struct vertice
 {
   int id;
-  float x, y, z;
+  double x, y, z;
 };
 
 struct face
@@ -50,6 +50,7 @@ objeto3d leObjeto(string arquivo)
   string linha;
   objeto3d obj;
   int contadorVertices = 0; // numero do vertice, usado para indexar vertices
+  int contadorDeErros = 0;
 
   while (getline(objeto, linha))
   {
@@ -109,6 +110,7 @@ void imprimeObjeto(objeto3d obj)
   }
 }
 
+int rotacao = 0;
 char title[] = "3D Shapes";
 objeto3d obj = leObjeto("submarine_triangulated.obj");
 
@@ -122,46 +124,49 @@ void initGL()
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
 }
 
+void rodarSubmarino(int tempo)
+{
+  // glLoadIdentity();
+  rotacao += 1;
 
+  glutPostRedisplay();
+  glutTimerFunc(10, rodarSubmarino, 0);
+}
 
 void display()
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
-  glMatrixMode(GL_MODELVIEW);                         // To operate on model-view matrix
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glTranslatef(0.0f, 0.0f, -2.0f);
+  
+  glRotatef(rotacao, 1, 0, 0);
 
-  glLoadIdentity();                // Reset the model-view matrix
-  glTranslatef(0.0f, 0.0f, -6.0f); // Move left and into the screen
-
-  glRotatef(45,1,0,0);
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
     glColor3f(1.0f, 0.0f, 0.0f); // Red
+    int multiplicador = 5000;
 
-    glVertex3f(obj.faces[i].vert1.x / 5000, obj.faces[i].vert1.y / 5000, obj.faces[i].vert1.z / 5000);
-    glVertex3f(obj.faces[i].vert2.x / 5000, obj.faces[i].vert2.y / 5000, obj.faces[i].vert2.z / 5000);
-    glVertex3f(obj.faces[i].vert3.x / 5000, obj.faces[i].vert3.y / 5000, obj.faces[i].vert3.z / 5000);
+    glVertex3f(obj.faces[i].vert1.x / (float)multiplicador, obj.faces[i].vert1.y / (float)multiplicador, obj.faces[i].vert1.z / (float)multiplicador);
+    glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
+    glVertex3f(obj.faces[i].vert3.x / (float)multiplicador, obj.faces[i].vert3.y / (float)multiplicador, obj.faces[i].vert3.z / (float)multiplicador);
   }
-
   glEnd();
 
-  glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
+  glutSwapBuffers();
 }
 
 void reshape(GLsizei width, GLsizei height)
-{ // GLsizei for non-negative integer
-  // Compute aspect ratio of the new window
+{
   if (height == 0)
-    height = 1; // To prevent divide by 0
+    height = 1;
   GLfloat aspect = (GLfloat)width / (GLfloat)height;
 
-  // Set the viewport to cover the new window
   glViewport(0, 0, width, height);
 
-  // Set the aspect ratio of the clipping volume to match the viewport
-  glMatrixMode(GL_PROJECTION); // To operate on the Projection matrix
-  glLoadIdentity();            // Reset
-  // Enable perspective projection with fovy, aspect, zNear and zFar
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
   gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
@@ -169,16 +174,17 @@ void reshape(GLsizei width, GLsizei height)
 
 int main(int argc, char **argv)
 {
-  glutInit(&argc, argv);            // Initialize GLUT
-  glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
-  glutInitWindowSize(640, 480);     // Set the window's initial width & height
-  glutInitWindowPosition(50, 50);   // Position the window's initial top-left corner
-  glutCreateWindow(title);          // Create window with the given title
-  glutDisplayFunc(display);         // Register callback handler for window re-paint event
-  glutReshapeFunc(reshape);         // Register callback handler for window re-size event
-  initGL();                         // Our own OpenGL initialization
-  glutMainLoop();                   // Enter the infinite event-processing loop
+  // imprimeObjeto(obj);
+  glutInit(&argc, argv);
+  glutInitDisplayMode(GLUT_DOUBLE);
+  glutInitWindowSize(640, 480);
+  glutInitWindowPosition(50, 50);
+  glutCreateWindow(title);
+  glutDisplayFunc(display);
+  glutReshapeFunc(reshape);
+  initGL();
+  rodarSubmarino(100);
+  glutMainLoop();
+
   return 0;
-  //
-  //imprimeObjeto(obj);
 }
