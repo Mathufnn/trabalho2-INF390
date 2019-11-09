@@ -73,9 +73,9 @@ objeto3d leObjeto(string arquivo)
     {
       face f;
 
-      float v1 = atoi(tokens[1].c_str()); // transforma string em int
-      float v2 = atoi(tokens[4].c_str());
-      float v3 = atoi(tokens[7].c_str());
+      int v1 = atoi(tokens[1].c_str()) - 1; // transforma string em int
+      int v2 = atoi(tokens[4].c_str()) - 1;
+      int v3 = atoi(tokens[7].c_str()) - 1;
 
       f.idvertice1 = v1;
       f.idvertice2 = v2;
@@ -110,9 +110,10 @@ void imprimeObjeto(objeto3d obj)
   }
 }
 
-int rotacao = 0;
-char title[] = "3D Shapes";
-objeto3d obj = leObjeto("submarine_triangulated.obj");
+double rotacao = 1; // variaveis para testar se o submarino esta sendo mostrado corretamente
+bool rotacionar = 1;
+char title[] = "Yellow submarine";
+objeto3d obj = leObjeto("submarine2.obj");
 
 void initGL()
 {
@@ -127,10 +128,21 @@ void initGL()
 void rodarSubmarino(int tempo)
 {
   // glLoadIdentity();
-  rotacao += 1;
+  if (rotacionar)
+  {
+    rotacao += 1;
+  }
 
   glutPostRedisplay();
   glutTimerFunc(10, rodarSubmarino, 0);
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+  if (key == 82 || key == 114)
+  {
+    rotacionar = !rotacionar;
+  }
 }
 
 void display()
@@ -139,14 +151,15 @@ void display()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glTranslatef(0.0f, 0.0f, -2.0f);
-  
-  glRotatef(rotacao, 1, 0, 0);
 
+  glRotatef(-90, 1, 0, 0);
+  glRotatef(rotacao, 0, 0, 1);
+
+  glColor3f(1, 1, 0);
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
-    glColor3f(1.0f, 0.0f, 0.0f); // Red
-    int multiplicador = 5000;
+    int multiplicador = 100;
 
     glVertex3f(obj.faces[i].vert1.x / (float)multiplicador, obj.faces[i].vert1.y / (float)multiplicador, obj.faces[i].vert1.z / (float)multiplicador);
     glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
@@ -182,8 +195,9 @@ int main(int argc, char **argv)
   glutCreateWindow(title);
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
+  glutKeyboardFunc(keyboard);
   initGL();
-  rodarSubmarino(100);
+  glutTimerFunc(100, rodarSubmarino, 0);
   glutMainLoop();
 
   return 0;
