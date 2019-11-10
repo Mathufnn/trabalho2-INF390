@@ -122,6 +122,9 @@ double rotacao = 1; // variaveis para testar se o submarino esta sendo mostrado 
 bool rotacionar = 0;
 char title[] = "Psychedelic submarine";
 objeto3d obj = leObjeto("submarine2.obj");
+objeto3d obj1 = leObjeto("cavalo.obj");
+objeto3d obj2 = leObjeto("navio.obj");
+objeto3d obj3 = leObjeto("leao_marinho.obj");
 
 void initGL()
 {
@@ -229,14 +232,20 @@ void display()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(0, posy + 1, posz + 1, 0, posy, posz, 0, 1, 0);
-  desenhaCubo();
+  gluLookAt(1, posy + 1, posz + 1, 0, posy, posz, 0, 1, 0);
+  //desenhaCubo();
+  glColor3f(0.0f, 0.0f, 1.0f); // Color Blue
 
+  glutSolidCube(20);
   glTranslatef(0, posy, posz);
   glRotatef(-90, 1, 0, 0);
   glRotatef(rotacao, 0, 0, 1);
 
   int cor = 0;
+
+
+
+// submarino
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
@@ -253,6 +262,58 @@ void display()
     glVertex3f(obj.faces[i].vert1.x / (float)multiplicador, obj.faces[i].vert1.y / (float)multiplicador, obj.faces[i].vert1.z / (float)multiplicador);
     glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
     glVertex3f(obj.faces[i].vert3.x / (float)multiplicador, obj.faces[i].vert3.y / (float)multiplicador, obj.faces[i].vert3.z / (float)multiplicador);
+  }
+  glEnd();
+
+
+
+// cavalo marinho
+  glColor3f(1, 0, 0);
+
+  glRotatef(180, 0, -1, -1);
+  glTranslatef(0, 0, 2);
+  glBegin(GL_TRIANGLES);
+  for (int i = 0; i < obj1.faces.size(); i++)
+  {
+    int multiplicador = 200;
+    glVertex3f(obj1.faces[i].vert1.x / (float)multiplicador, obj1.faces[i].vert1.y / (float)multiplicador, obj1.faces[i].vert1.z / (float)multiplicador);
+    glVertex3f(obj1.faces[i].vert2.x / (float)multiplicador, obj1.faces[i].vert2.y / (float)multiplicador, obj1.faces[i].vert2.z / (float)multiplicador);
+    glVertex3f(obj1.faces[i].vert3.x / (float)multiplicador, obj1.faces[i].vert3.y / (float)multiplicador, obj1.faces[i].vert3.z / (float)multiplicador);
+  }
+  glEnd();
+
+
+
+// navio
+  glColor3f(0, 1, 1);
+
+  glRotatef(0, 0, 1, 1);
+  glTranslatef(1, 0, -1);
+
+  glBegin(GL_TRIANGLES);
+  for (int i = 0; i < obj2.faces.size(); i++)
+  {
+    int multiplicador = 1;
+    glVertex3f(obj2.faces[i].vert1.x / (float)multiplicador, obj2.faces[i].vert1.y / (float)multiplicador, obj2.faces[i].vert1.z / (float)multiplicador);
+    glVertex3f(obj2.faces[i].vert2.x / (float)multiplicador, obj2.faces[i].vert2.y / (float)multiplicador, obj2.faces[i].vert2.z / (float)multiplicador);
+    glVertex3f(obj2.faces[i].vert3.x / (float)multiplicador, obj2.faces[i].vert3.y / (float)multiplicador, obj2.faces[i].vert3.z / (float)multiplicador);
+  }
+  glEnd();
+
+
+
+// leão marinho
+  glColor3f(1, 0, 1);
+  glRotatef(0, 0, 1, 1);
+  glTranslatef(0, 0, 1);
+
+  glBegin(GL_TRIANGLES);
+  for (int i = 0; i < obj3.faces.size(); i++)
+  {
+    int multiplicador = 400;
+    glVertex3f(obj3.faces[i].vert1.x / (float)multiplicador, obj3.faces[i].vert1.y / (float)multiplicador, obj3.faces[i].vert1.z / (float)multiplicador);
+    glVertex3f(obj3.faces[i].vert2.x / (float)multiplicador, obj3.faces[i].vert2.y / (float)multiplicador, obj3.faces[i].vert2.z / (float)multiplicador);
+    glVertex3f(obj3.faces[i].vert3.x / (float)multiplicador, obj3.faces[i].vert3.y / (float)multiplicador, obj3.faces[i].vert3.z / (float)multiplicador);
   }
   glEnd();
 
