@@ -2,21 +2,15 @@
 #include <GL/glut.h> // compilar com -lGL -lGLU -lglut
 using namespace std;
 
-
-GLdouble eyex = 0.0;
-GLdouble eyey = 0.0;
-GLdouble eyez = 0.0;
+GLdouble posx = 0.0;
+GLdouble posy = 0.0;
+GLdouble posz = 0.0;
 GLdouble centerX = 0.0;
 GLdouble centerY = 0.0;
 GLdouble centerZ = 0.0;
 GLdouble upX = 0.0;
 GLdouble upY = 0.0;
 GLdouble upZ = 0.0;
-
-
-
-
-
 
 struct vertice
 {
@@ -125,8 +119,8 @@ void imprimeObjeto(objeto3d obj)
 }
 
 double rotacao = 1; // variaveis para testar se o submarino esta sendo mostrado corretamente
-bool rotacionar = 1;
-char title[] = "Yellow submarine";
+bool rotacionar = 0;
+char title[] = "Psychedelic submarine";
 objeto3d obj = leObjeto("submarine2.obj");
 
 void initGL()
@@ -153,56 +147,109 @@ void rodarSubmarino(int tempo)
 
 void keyboard(unsigned char key, int x, int y)
 {
-  if (key == 82 || key == 114)
+  if (key == 'R' || key == 'r') // R ou r
   {
     rotacionar = !rotacionar;
   }
+  else if (key == 'W' || key == 'w')
+  {
+    posz -= 0.1;
+  }
+  else if (key == 'S' || key == 's')
+  {
+    posz += 0.1;
+  }
 
-
-
+  cout << posx << " / " << posy << " / " << posz << " / " << (int)rotacao % 360 << " graus" << endl;
 }
 
+void keyboard2(int key, int x, int y)
+{
 
+  if (key == GLUT_KEY_UP)
+  {
+    posy += 0.1;
+  }
+  else if (key == GLUT_KEY_DOWN)
+  {
+    posy -= 0.1;
+  }
+  else if (key == GLUT_KEY_RIGHT)
+  {
+    rotacao += 5;
+  }
+  else if (key == GLUT_KEY_LEFT)
+  {
+    rotacao -= 5;
+  }
 
-void keyboard2( int key, int x ,int y){
-
- if (key == GLUT_KEY_UP) {
-   eyez++;
-   eyex++;
-   eyey++;
- }
-
- if (key == GLUT_KEY_DOWN){
-   eyez--;
-    eyey--;
-   eyex--;
- }
-
- cout << eyex << " " << eyey << " " << eyez << endl;
-
-
+  cout << posx << " / " << posy << " / " << posz << " / " << (int)rotacao % 360 << " graus" << endl;
 }
 
+void desenhaCubo()
+{
+  glBegin(GL_QUADS);               // Draw The Cube Using quads
+  glColor3f(0.0f, 1.0f, 0.0f);     // Color Blue
+  glVertex3f(1.0f, 1.0f, -1.0f);   // Top Right Of The Quad (Top)
+  glVertex3f(-1.0f, 1.0f, -1.0f);  // Top Left Of The Quad (Top)
+  glVertex3f(-1.0f, 1.0f, 1.0f);   // Bottom Left Of The Quad (Top)
+  glVertex3f(1.0f, 1.0f, 1.0f);    // Bottom Right Of The Quad (Top)
+  glColor3f(1.0f, 0.5f, 0.0f);     // Color Orange
+  glVertex3f(1.0f, -1.0f, 1.0f);   // Top Right Of The Quad (Bottom)
+  glVertex3f(-1.0f, -1.0f, 1.0f);  // Top Left Of The Quad (Bottom)
+  glVertex3f(-1.0f, -1.0f, -1.0f); // Bottom Left Of The Quad (Bottom)
+  glVertex3f(1.0f, -1.0f, -1.0f);  // Bottom Right Of The Quad (Bottom)
+  glColor3f(1.0f, 0.0f, 0.0f);     // Color Red
+  glVertex3f(1.0f, 1.0f, 1.0f);    // Top Right Of The Quad (Front)
+  glVertex3f(-1.0f, 1.0f, 1.0f);   // Top Left Of The Quad (Front)
+  glVertex3f(-1.0f, -1.0f, 1.0f);  // Bottom Left Of The Quad (Front)
+  glVertex3f(1.0f, -1.0f, 1.0f);   // Bottom Right Of The Quad (Front)
+  glColor3f(1.0f, 1.0f, 0.0f);     // Color Yellow
+  glVertex3f(1.0f, -1.0f, -1.0f);  // Top Right Of The Quad (Back)
+  glVertex3f(-1.0f, -1.0f, -1.0f); // Top Left Of The Quad (Back)
+  glVertex3f(-1.0f, 1.0f, -1.0f);  // Bottom Left Of The Quad (Back)
+  glVertex3f(1.0f, 1.0f, -1.0f);   // Bottom Right Of The Quad (Back)
+  glColor3f(0.0f, 0.0f, 1.0f);     // Color Blue
+  glVertex3f(-1.0f, 1.0f, 1.0f);   // Top Right Of The Quad (Left)
+  glVertex3f(-1.0f, 1.0f, -1.0f);  // Top Left Of The Quad (Left)
+  glVertex3f(-1.0f, -1.0f, -1.0f); // Bottom Left Of The Quad (Left)
+  glVertex3f(-1.0f, -1.0f, 1.0f);  // Bottom Right Of The Quad (Left)
+  glColor3f(1.0f, 0.0f, 1.0f);     // Color Violet
+  glVertex3f(1.0f, 1.0f, -1.0f);   // Top Right Of The Quad (Right)
+  glVertex3f(1.0f, 1.0f, 1.0f);    // Top Left Of The Quad (Right)
+  glVertex3f(1.0f, -1.0f, 1.0f);   // Bottom Left Of The Quad (Right)
+  glVertex3f(1.0f, -1.0f, -1.0f);  // Bottom Right Of The Quad (Right)
+  glEnd();
+
+  return;
+}
 
 void display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  gluLookAt(0, posy + 1, posz + 1, 0, posy, posz, 0, 1, 0);
+  desenhaCubo();
 
-  gluLookAt(0,0,-4,0.0,0,1,0,1,0);
-  gluPerspective(0,1.33,0,100);
-  glTranslatef(0.0f, 0.0f, -2.0f);
+  glTranslatef(0, posy, posz);
+  glRotatef(-90, 1, 0, 0);
+  glRotatef(rotacao, 0, 0, 1);
 
-//  glRotatef(-90, 1, 0, 0);
- // glRotatef(rotacao, 0, 0, 1);
-
-  glColor3f(1, 1, 0);
+  int cor = 0;
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
+    cor = (cor + 1) % 3;
+    if (cor == 0)
+      glColor3f(1, 0, 0);
+    else if (cor == 1)
+      glColor3f(0, 1, 0);
+    else if (cor == 2)
+      glColor3f(0, 0, 1);
     int multiplicador = 100;
 
+    // Desenha todos os triangulos carregados do arquivo de entrada
     glVertex3f(obj.faces[i].vert1.x / (float)multiplicador, obj.faces[i].vert1.y / (float)multiplicador, obj.faces[i].vert1.z / (float)multiplicador);
     glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
     glVertex3f(obj.faces[i].vert3.x / (float)multiplicador, obj.faces[i].vert3.y / (float)multiplicador, obj.faces[i].vert3.z / (float)multiplicador);
