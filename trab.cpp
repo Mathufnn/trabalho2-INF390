@@ -122,7 +122,8 @@ double rotacao = 1; // variaveis para testar se o submarino esta sendo mostrado 
 bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
 bool andarPraFrente = 0, andarPraTras = 0;
 bool subir = 0, descer = 0;
-char title[] = "Psychedelic submarine";
+bool vistaDeFora = 1;
+char title[] = "Yellow submarine";
 objeto3d submarino = leObjeto("submarine.obj");
 objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
@@ -132,8 +133,8 @@ void initGL()
 {
   glClearColor(0, 1, 1, 0.3); // Set background color to black and opaque
   glClearDepth(1.0f);         // Set background depth to farthest
-  glEnable(GL_DEPTH_TEST);    // Enable depth testing for z-culling
-  // glDepthFunc(GL_LEQUAL);               // Set the type of depth-test
+  // glEnable(GL_DEPTH_TEST);    // Enable depth testing for z-culling
+  glDepthFunc(GL_NEVER); // Set the type of depth-test
   // glEnable(GL_CULL_FACE);
   glShadeModel(GL_SMOOTH);                           // Enable smooth shading
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
@@ -180,6 +181,16 @@ void keyboardNormal(unsigned char key, int x, int y)
   else if (key == 'S' || key == 's')
   {
     andarPraTras = true;
+  }
+  else if (key == 'F' || key == 'f')
+  {
+    vistaDeFora = true;
+    glutPostRedisplay();
+  }
+  else if (key == 'I' || key == 'i')
+  {
+    vistaDeFora = false;
+    glutPostRedisplay();
   }
 }
 
@@ -293,7 +304,11 @@ void display()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);
+
+  if (vistaDeFora)
+    gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);
+  else
+    gluLookAt(0, posy, posz - 1, 0, posy, posz - 1.5, 0, 1, 0);
 
   glPushMatrix();
   glColor3f(0.0f, 0.0f, 1.0f); // Color Blue
@@ -302,7 +317,6 @@ void display()
   glPopMatrix();
 
   //--------------------------------------------------------
-
   // navio
   glPushMatrix();
   glColor3f((float)139 / 255, (float)69 / 255, (float)19 / 255);
@@ -312,6 +326,7 @@ void display()
 
   desenhaObjeto(navio, 1);
   glPopMatrix();
+
   //--------------------------------------------------------
   // submarino
   glPushMatrix();
@@ -325,32 +340,29 @@ void display()
 
   //--------------------------------------------------------
 
-  // leão marinho
-  glPushMatrix();
-  glColor3f(1, 0, 1);
-  glRotatef(rotacao, 0, 1, 0);
-  glTranslatef(0, -5, 0);
-  
-
-  desenhaObjeto(leao, 400);
-  glPopMatrix();
+  // peixes
+  // glPushMatrix();
+  // glColor3f(1, 0, 0);
+  // for (int i = 0; i < 100; i++)
+  // {
+  //   int x_peixe = rand() % 200 - 100;
+  //   int y_peixe = rand() % 200 - 200;
+  //   int z_peixe = rand() % 200 - 100;
+  //   glTranslatef(x_peixe,y_peixe,z_peixe);
+  //   desenhaObjeto(peixe, 1);
+  // }
+  // glPopMatrix();
 
   //--------------------------------------------------------
 
-  // cavalo marinho
-  // glColor3f(1, 0, 0);
+  // leão marinho
+  // glPushMatrix();
+  // glColor3f(1, 0, 1);
+  // glRotatef(rotacao, 0, 1, 0);
+  // glTranslatef(0, -5, 0);
 
-  // glRotatef(180, 0, -1, -1);
-  // glTranslatef(0, 0, 2);
-  // glBegin(GL_TRIANGLES);
-  // for (int i = 0; i < obj1.faces.size(); i++)
-  // {
-  //   int multiplicador = 200;
-  //   glVertex3f(obj1.faces[i].vert1.x / (float)multiplicador, obj1.faces[i].vert1.y / (float)multiplicador, obj1.faces[i].vert1.z / (float)multiplicador);
-  //   glVertex3f(obj1.faces[i].vert2.x / (float)multiplicador, obj1.faces[i].vert2.y / (float)multiplicador, obj1.faces[i].vert2.z / (float)multiplicador);
-  //   glVertex3f(obj1.faces[i].vert3.x / (float)multiplicador, obj1.faces[i].vert3.y / (float)multiplicador, obj1.faces[i].vert3.z / (float)multiplicador);
-  // }
-  // glEnd();
+  // desenhaObjeto(leao, 400);
+  // glPopMatrix();
 
   glutSwapBuffers();
 }
