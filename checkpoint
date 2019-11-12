@@ -119,9 +119,7 @@ void imprimeObjeto(objeto3d obj)
 }
 
 double rotacao = 1; // variaveis para testar se o submarino esta sendo mostrado corretamente
-bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
-bool andarPraFrente = 0, andarPraTras = 0;
-bool subir = 0, descer = 0;
+bool rotacionar = 0;
 char title[] = "Psychedelic submarine";
 objeto3d submarino = leObjeto("submarine2.obj");
 objeto3d cavalo = leObjeto("cavalo.obj");
@@ -130,11 +128,10 @@ objeto3d leao = leObjeto("leao_marinho.obj");
 
 void initGL()
 {
-  glClearColor(0, 1, 1, 0.3); // Set background color to black and opaque
-  glClearDepth(1.0f);         // Set background depth to farthest
-  glEnable(GL_DEPTH_TEST);    // Enable depth testing for z-culling
-  // glDepthFunc(GL_LEQUAL);               // Set the type of depth-test
-  glEnable(GL_CULL_FACE);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);              // Set background color to black and opaque
+  glClearDepth(1.0f);                                // Set background depth to farthest
+  glEnable(GL_DEPTH_TEST);                           // Enable depth testing for z-culling
+  glDepthFunc(GL_LEQUAL);                            // Set the type of depth-test
   glShadeModel(GL_SMOOTH);                           // Enable smooth shading
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
 }
@@ -142,100 +139,54 @@ void initGL()
 void rodarSubmarino(int tempo)
 {
   // glLoadIdentity();
-  if (rodarSentidoHorario)
+  if (rotacionar)
   {
     rotacao += 1;
-  }
-  else if (rodarSentidoAntiHorario)
-  {
-    rotacao -= 1;
-  }
-  else if (andarPraFrente)
-  {
-    posz -= 0.05;
-  }
-  else if (andarPraTras)
-  {
-    posz += 0.05;
-  }
-  else if (subir)
-  {
-    posy += 0.05;
-  }
-  else if (descer)
-  {
-    posy -= 0.05;
   }
 
   glutPostRedisplay();
   glutTimerFunc(10, rodarSubmarino, 0);
 }
 
-void keyboardNormal(unsigned char key, int x, int y)
+void keyboard(unsigned char key, int x, int y)
 {
-  if (key == 'W' || key == 'w')
+  if (key == 'R' || key == 'r') // R ou r
   {
-    andarPraFrente = true;
+    rotacionar = !rotacionar;
+  }
+  else if (key == 'W' || key == 'w')
+  {
+    posz -= 0.1;
   }
   else if (key == 'S' || key == 's')
   {
-    andarPraTras = true;
+    posz += 0.1;
   }
+
+  cout << posx << " / " << posy << " / " << posz << " / " << (int)rotacao % 360 << " graus" << endl;
 }
 
-void keyboardEspecial(int key, int x, int y)
+void keyboard2(int key, int x, int y)
 {
 
   if (key == GLUT_KEY_UP)
   {
-    subir = true;
+    posy += 0.1;
   }
   else if (key == GLUT_KEY_DOWN)
   {
-    descer = true;
+    posy -= 0.1;
   }
   else if (key == GLUT_KEY_RIGHT)
   {
-    rodarSentidoHorario = true;
+    rotacao += 5;
   }
   else if (key == GLUT_KEY_LEFT)
   {
-    rodarSentidoAntiHorario = true;
+    rotacao -= 5;
   }
 
-  // cout << posx << " / " << posy << " / " << posz << " / " << (int)rotacao % 360 << " graus" << endl;
-}
-
-void keyboardNormal_soltar(unsigned char key, int x, int y)
-{
-  if (key == 'W' || key == 'w')
-  {
-    andarPraFrente = false;
-  }
-  else if (key == 'S' || key == 's')
-  {
-    andarPraTras = false;
-  }
-}
-
-void keyboardEspecial_soltar(int key, int x, int y)
-{
-  if (key == GLUT_KEY_UP)
-  {
-    subir = false;
-  }
-  else if (key == GLUT_KEY_DOWN)
-  {
-    descer = false;
-  }
-  else if (key == GLUT_KEY_RIGHT)
-  {
-    rodarSentidoHorario = false;
-  }
-  else if (key == GLUT_KEY_LEFT)
-  {
-    rodarSentidoAntiHorario = false;
-  }
+  cout << posx << " / " << posy << " / " << posz << " / " << (int)rotacao % 360 << " graus" << endl;
 }
 
 void desenhaCubo()
@@ -276,16 +227,31 @@ void desenhaCubo()
   return;
 }
 
-void desenhaObjeto(objeto3d obj, int multiplicador)
+void desenhaObjeto(objeto3d &obj, int multiplicador, GLdouble rotacaox, GLdouble rotacaoy,
+                   GLdouble rotacaoz, GLdouble posx, GLdouble posy, GLdouble posz)
 {
+  glPushMatrix();
+  glTranslatef(posx, posy, posz);
+
+  if (rotacaox != 0)
+    glRotatef(rotacaox, 1, 0, 0);
+  if (rotacaoy != 0)
+    glRotatef(rotacaoy, 0, 1, 0);
+  if (rotacaoz != 0)
+    glRotatef(rotacaoz, 0, 0, 1);
+
+  glColor3f(1, 0, 0);
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
-    glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
+    // Desenha todos os triangulos carregados do arquivo de entrada
     glVertex3f(obj.faces[i].vert1.x / (float)multiplicador, obj.faces[i].vert1.y / (float)multiplicador, obj.faces[i].vert1.z / (float)multiplicador);
+    glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
     glVertex3f(obj.faces[i].vert3.x / (float)multiplicador, obj.faces[i].vert3.y / (float)multiplicador, obj.faces[i].vert3.z / (float)multiplicador);
   }
   glEnd();
+
+  glPopMatrix();
 }
 
 void display()
@@ -293,44 +259,14 @@ void display()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);
+  gluLookAt(0, posy + 1, posz + 1, 0, posy, posz, 0, 1, 0);
 
-  glPushMatrix();
-  glColor3f(0.0f, 0.0f, 1.0f); // Color Blue
-  glTranslatef(0, -50, 0);
-  glutSolidCube(100);
-  glPopMatrix();
+  // glutSolidCube(20);
 
-  // glPushMatrix();
-  // glColor3f(0.0f, 0.5f, 0.0f); // Color Blue
-  // glTranslatef(0, 50, 0);
-  // glutSolidCube(100);
-  // glPopMatrix();
+  desenhaObjeto(submarino, 100, -90, 0, 0, 0, posy, posz);
 
-  //--------------------------------------------------------
-
-  // navio
-  glPushMatrix();
-  glColor3f((float)139 / 255, (float)69 / 255, (float)19 / 255);
-
-  glRotatef(0, 1, 0, 1);
-  glRotatef(rotacao, 0, 1, 0);
-  glTranslatef(2, 0, -3);
-
-  desenhaObjeto(navio, 1);
-  glPopMatrix();
-  //--------------------------------------------------------
-  // submarino
-  glPushMatrix();
-
-  glTranslatef(0, posy, posz);
-  glRotatef(-90, 1, 0, 0);
-
-  glColor3f(1, 1, 0); 
-  desenhaObjeto(submarino, 100);
-  glPopMatrix();
-
-  //--------------------------------------------------------
+  glTranslatef(0, 0, 0);
+  desenhaObjeto(navio, 1, 0, -rotacao-180, 0, 3, -3, -3);
 
   // cavalo marinho
   // glColor3f(1, 0, 0);
@@ -347,9 +283,23 @@ void display()
   // }
   // glEnd();
 
-  //--------------------------------------------------------
+  // // navio
+  // glColor3f(0, 1, 1);
 
-  // leão marinho
+  // glRotatef(0, 0, 1, 1);
+  // glTranslatef(1, 0, -1);
+
+  // glBegin(GL_TRIANGLES);
+  // for (int i = 0; i < obj2.faces.size(); i++)
+  // {
+  //   int multiplicador = 1;
+  //   glVertex3f(obj2.faces[i].vert1.x / (float)multiplicador, obj2.faces[i].vert1.y / (float)multiplicador, obj2.faces[i].vert1.z / (float)multiplicador);
+  //   glVertex3f(obj2.faces[i].vert2.x / (float)multiplicador, obj2.faces[i].vert2.y / (float)multiplicador, obj2.faces[i].vert2.z / (float)multiplicador);
+  //   glVertex3f(obj2.faces[i].vert3.x / (float)multiplicador, obj2.faces[i].vert3.y / (float)multiplicador, obj2.faces[i].vert3.z / (float)multiplicador);
+  // }
+  // glEnd();
+
+  // // leão marinho
   // glColor3f(1, 0, 1);
   // glRotatef(0, 0, 1, 1);
   // glTranslatef(0, 0, 1);
@@ -392,10 +342,8 @@ int main(int argc, char **argv)
   glutCreateWindow(title);
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
-  glutKeyboardFunc(keyboardNormal);
-  glutSpecialFunc(keyboardEspecial);
-  glutKeyboardUpFunc(keyboardNormal_soltar);
-  glutSpecialUpFunc(keyboardEspecial_soltar);
+  glutKeyboardFunc(keyboard);
+  glutSpecialFunc(keyboard2);
   initGL();
   glutTimerFunc(100, rodarSubmarino, 0);
   glutMainLoop();
