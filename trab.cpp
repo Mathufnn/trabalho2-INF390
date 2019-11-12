@@ -123,7 +123,7 @@ bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
 bool andarPraFrente = 0, andarPraTras = 0;
 bool subir = 0, descer = 0;
 char title[] = "Psychedelic submarine";
-objeto3d submarino = leObjeto("submarine2.obj");
+objeto3d submarino = leObjeto("submarine.obj");
 objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
 objeto3d leao = leObjeto("leao_marinho.obj");
@@ -134,7 +134,7 @@ void initGL()
   glClearDepth(1.0f);         // Set background depth to farthest
   glEnable(GL_DEPTH_TEST);    // Enable depth testing for z-culling
   // glDepthFunc(GL_LEQUAL);               // Set the type of depth-test
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   glShadeModel(GL_SMOOTH);                           // Enable smooth shading
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
 }
@@ -301,19 +301,12 @@ void display()
   glutSolidCube(100);
   glPopMatrix();
 
-  // glPushMatrix();
-  // glColor3f(0.0f, 0.5f, 0.0f); // Color Blue
-  // glTranslatef(0, 50, 0);
-  // glutSolidCube(100);
-  // glPopMatrix();
-
   //--------------------------------------------------------
 
   // navio
   glPushMatrix();
   glColor3f((float)139 / 255, (float)69 / 255, (float)19 / 255);
 
-  glRotatef(0, 1, 0, 1);
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
 
@@ -326,8 +319,20 @@ void display()
   glTranslatef(0, posy, posz);
   glRotatef(-90, 1, 0, 0);
 
-  glColor3f(1, 1, 0); 
+  glColor3f(1, 1, 0);
   desenhaObjeto(submarino, 100);
+  glPopMatrix();
+
+  //--------------------------------------------------------
+
+  // leão marinho
+  glPushMatrix();
+  glColor3f(1, 0, 1);
+  glRotatef(rotacao, 0, 1, 0);
+  glTranslatef(0, -5, 0);
+  
+
+  desenhaObjeto(leao, 400);
   glPopMatrix();
 
   //--------------------------------------------------------
@@ -344,23 +349,6 @@ void display()
   //   glVertex3f(obj1.faces[i].vert1.x / (float)multiplicador, obj1.faces[i].vert1.y / (float)multiplicador, obj1.faces[i].vert1.z / (float)multiplicador);
   //   glVertex3f(obj1.faces[i].vert2.x / (float)multiplicador, obj1.faces[i].vert2.y / (float)multiplicador, obj1.faces[i].vert2.z / (float)multiplicador);
   //   glVertex3f(obj1.faces[i].vert3.x / (float)multiplicador, obj1.faces[i].vert3.y / (float)multiplicador, obj1.faces[i].vert3.z / (float)multiplicador);
-  // }
-  // glEnd();
-
-  //--------------------------------------------------------
-
-  // leão marinho
-  // glColor3f(1, 0, 1);
-  // glRotatef(0, 0, 1, 1);
-  // glTranslatef(0, 0, 1);
-
-  // glBegin(GL_TRIANGLES);
-  // for (int i = 0; i < obj3.faces.size(); i++)
-  // {
-  //   int multiplicador = 400;
-  //   glVertex3f(obj3.faces[i].vert1.x / (float)multiplicador, obj3.faces[i].vert1.y / (float)multiplicador, obj3.faces[i].vert1.z / (float)multiplicador);
-  //   glVertex3f(obj3.faces[i].vert2.x / (float)multiplicador, obj3.faces[i].vert2.y / (float)multiplicador, obj3.faces[i].vert2.z / (float)multiplicador);
-  //   glVertex3f(obj3.faces[i].vert3.x / (float)multiplicador, obj3.faces[i].vert3.y / (float)multiplicador, obj3.faces[i].vert3.z / (float)multiplicador);
   // }
   // glEnd();
 
