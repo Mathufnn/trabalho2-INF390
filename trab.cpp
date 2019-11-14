@@ -1,16 +1,7 @@
 #include <bits/stdc++.h>
 #include <GL/glut.h> // compilar com -lGL -lGLU -lglut
 using namespace std;
-
-GLdouble posx = 0.0;
-GLdouble posy = 0.0;
-GLdouble posz = 0.0;
-GLdouble centerX = 0.0;
-GLdouble centerY = 0.0;
-GLdouble centerZ = 0.0;
-GLdouble upX = 0.0;
-GLdouble upY = 0.0;
-GLdouble upZ = 0.0;
+#define PI 3.14159265
 
 struct vertice
 {
@@ -118,7 +109,15 @@ void imprimeObjeto(objeto3d obj)
   }
 }
 
-double rotacao = 1; // variaveis para testar se o submarino esta sendo mostrado corretamente
+//-------------------------------------------------------------------------------------------------------
+//
+//
+// FIM DO PARSER, INICIO DO OPENGL
+//
+//
+//-------------------------------------------------------------------------------------------------------
+
+GLint rotacao = 1;
 bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
 bool andarPraFrente = 0, andarPraTras = 0;
 bool subir = 0, descer = 0;
@@ -128,16 +127,38 @@ objeto3d submarino = leObjeto("submarine.obj");
 objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
 objeto3d leao = leObjeto("leao_marinho.obj");
+objeto3d peixe = leObjeto("fish.obj");
+int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
+int y_peixe[100];
+int z_peixe[100];
+GLdouble posx = 0.0; // posição que será usada para referência para câmera
+GLdouble posy = 0.0;
+GLdouble posz = 0.0;
+GLdouble centroSubmarinoX = 0.0; // posição que será usada como referência para objetos no mapa
+GLdouble centroSubmarinoY = 0.0;
+GLdouble centroSubmarinoZ = 0.0;
+GLfloat verticesQuadrado[8][3] = {{-1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {-1.0, -1.0, -1.0}, {-1.0, 1.0, -1.0}, {1.0, 1.0, -1.0}, {1.0, -1.0, -1.0}};
+
+GLdouble posicaoAtualSubmarinoX = 0.0;
+// GLdouble posicaoAtualSubmarinoY = 0.0;
+GLdouble posicaoAtualSubmarinoZ = 0.0;
 
 void initGL()
 {
-  glClearColor(0, 1, 1, 0.3); // Set background color to black and opaque
-  glClearDepth(1.0f);         // Set background depth to farthest
-  // glEnable(GL_DEPTH_TEST);    // Enable depth testing for z-culling
-  glDepthFunc(GL_NEVER); // Set the type of depth-test
-  // glEnable(GL_CULL_FACE);
-  glShadeModel(GL_SMOOTH);                           // Enable smooth shading
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
+  for (int i = 0; i < 100; i++)
+  {
+    x_peixe[i] = rand() % 200 - 100;
+    y_peixe[i] = rand() % 200 - 200;
+    z_peixe[i] = rand() % 200 - 100;
+  }
+  glClearColor(0, 1, 1, 1); // CÉU
+  // glClearDepth(1.0f);         // Set background depth to farthest
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  // glDepthMask(GL_FALSE);
+  glDepthFunc(GL_LEQUAL);
+  glEnable(GL_DEPTH_TEST); // Enable depth testing for z-culling
 }
 
 void rodarSubmarino(int tempo)
@@ -146,18 +167,34 @@ void rodarSubmarino(int tempo)
   if (rodarSentidoHorario)
   {
     rotacao += 1;
+    rotacao = rotacao % 360;
+    cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (rodarSentidoAntiHorario)
   {
+    if (rotacao == 0)
+    {
+      rotacao = 360;
+    }
     rotacao -= 1;
+    cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (andarPraFrente)
   {
+    // posx -= sin(rotacao) / 0.1;
+    // posz -= cos(rotacao) / 0.1;
     posz -= 0.05;
+    if (rotacao % 360)
+      posicaoAtualSubmarinoX -= sin(rotacao * PI / 180) * 0.05;
+    posicaoAtualSubmarinoZ -= cos(rotacao * PI / 180) * 0.05;
+    cout << fixed << setprecision(3) << "posz antigo = " << posz << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
   }
   else if (andarPraTras)
   {
     posz += 0.05;
+    posicaoAtualSubmarinoX += sin(rotacao * PI / 180) * 0.05;
+    posicaoAtualSubmarinoZ += cos(rotacao * PI / 180) * 0.05;
+    cout << fixed << setprecision(3) << "posz antigo = " << posz << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
   }
   else if (subir)
   {
@@ -249,42 +286,19 @@ void keyboardEspecial_soltar(int key, int x, int y)
   }
 }
 
-void desenhaCubo()
+void quad(int a, int b, int c, int d, int ncolor)
 {
-  glBegin(GL_QUADS);               // Draw The Cube Using quads
-  glColor3f(0.0f, 1.0f, 0.0f);     // Color Blue
-  glVertex3f(1.0f, 1.0f, -1.0f);   // Top Right Of The Quad (Top)
-  glVertex3f(-1.0f, 1.0f, -1.0f);  // Top Left Of The Quad (Top)
-  glVertex3f(-1.0f, 1.0f, 1.0f);   // Bottom Left Of The Quad (Top)
-  glVertex3f(1.0f, 1.0f, 1.0f);    // Bottom Right Of The Quad (Top)
-  glColor3f(1.0f, 0.5f, 0.0f);     // Color Orange
-  glVertex3f(1.0f, -1.0f, 1.0f);   // Top Right Of The Quad (Bottom)
-  glVertex3f(-1.0f, -1.0f, 1.0f);  // Top Left Of The Quad (Bottom)
-  glVertex3f(-1.0f, -1.0f, -1.0f); // Bottom Left Of The Quad (Bottom)
-  glVertex3f(1.0f, -1.0f, -1.0f);  // Bottom Right Of The Quad (Bottom)
-  glColor3f(1.0f, 0.0f, 0.0f);     // Color Red
-  glVertex3f(1.0f, 1.0f, 1.0f);    // Top Right Of The Quad (Front)
-  glVertex3f(-1.0f, 1.0f, 1.0f);   // Top Left Of The Quad (Front)
-  glVertex3f(-1.0f, -1.0f, 1.0f);  // Bottom Left Of The Quad (Front)
-  glVertex3f(1.0f, -1.0f, 1.0f);   // Bottom Right Of The Quad (Front)
-  glColor3f(1.0f, 1.0f, 0.0f);     // Color Yellow
-  glVertex3f(1.0f, -1.0f, -1.0f);  // Top Right Of The Quad (Back)
-  glVertex3f(-1.0f, -1.0f, -1.0f); // Top Left Of The Quad (Back)
-  glVertex3f(-1.0f, 1.0f, -1.0f);  // Bottom Left Of The Quad (Back)
-  glVertex3f(1.0f, 1.0f, -1.0f);   // Bottom Right Of The Quad (Back)
-  glColor3f(0.0f, 0.0f, 1.0f);     // Color Blue
-  glVertex3f(-1.0f, 1.0f, 1.0f);   // Top Right Of The Quad (Left)
-  glVertex3f(-1.0f, 1.0f, -1.0f);  // Top Left Of The Quad (Left)
-  glVertex3f(-1.0f, -1.0f, -1.0f); // Bottom Left Of The Quad (Left)
-  glVertex3f(-1.0f, -1.0f, 1.0f);  // Bottom Right Of The Quad (Left)
-  glColor3f(1.0f, 0.0f, 1.0f);     // Color Violet
-  glVertex3f(1.0f, 1.0f, -1.0f);   // Top Right Of The Quad (Right)
-  glVertex3f(1.0f, 1.0f, 1.0f);    // Top Left Of The Quad (Right)
-  glVertex3f(1.0f, -1.0f, 1.0f);   // Bottom Left Of The Quad (Right)
-  glVertex3f(1.0f, -1.0f, -1.0f);  // Bottom Right Of The Quad (Right)
-  glEnd();
+  // if (ncolor == 4)
+  glColor4f(0, 0, 1, 0.9);
+  // else
+  //   glColor4f(1, 0, 1, 0.5);
 
-  return;
+  glBegin(GL_QUADS);
+  glVertex3fv(verticesQuadrado[a]);
+  glVertex3fv(verticesQuadrado[b]);
+  glVertex3fv(verticesQuadrado[c]);
+  glVertex3fv(verticesQuadrado[d]);
+  glEnd();
 }
 
 void desenhaObjeto(objeto3d obj, int multiplicador)
@@ -310,16 +324,40 @@ void display()
   else
     gluLookAt(0, posy, posz - 1, 0, posy, posz - 1.5, 0, 1, 0);
 
+  // cubo representando oceano
   glPushMatrix();
-  glColor3f(0.0f, 0.0f, 1.0f); // Color Blue
+
+  glColor4f(0.0f, 0.0f, 1.0f, 0.5); // Color Blue
+  // glRotatef(rotacao, 0, 1, 0);
   glTranslatef(0, -50, 0);
   glutSolidCube(100);
+
+  // quad(1, 2, 3, 0, 0);
+  // quad(6, 7, 3, 2, 1);
+  // quad(3, 7, 4, 0, 2);
+  // quad(5, 6, 2, 1, 3);
+  // quad(7, 6, 5, 4, 4);
+  // quad(4, 5, 1, 0, 5);
+  // glScalef(100, 100, 100);
   glPopMatrix();
 
   //--------------------------------------------------------
+  // peixes
+  for (int i = 0; i < 100; i++)
+  {
+    glPushMatrix();
+    glColor3f(1, 0, 0);
+    glRotatef(rotacao, 0, 1, 0);
+    glTranslatef(x_peixe[i], y_peixe[i], z_peixe[i]);
+    desenhaObjeto(peixe, 1);
+    glPopMatrix();
+  }
+
+  //--------------------------------------------------------
+
   // navio
   glPushMatrix();
-  glColor3f((float)139 / 255, (float)69 / 255, (float)19 / 255);
+  glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
 
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
@@ -334,35 +372,9 @@ void display()
   glTranslatef(0, posy, posz);
   glRotatef(-90, 1, 0, 0);
 
-  glColor3f(1, 1, 0);
+  glColor4f(1, 1, 0, 1);
   desenhaObjeto(submarino, 100);
   glPopMatrix();
-
-  //--------------------------------------------------------
-
-  // peixes
-  // glPushMatrix();
-  // glColor3f(1, 0, 0);
-  // for (int i = 0; i < 100; i++)
-  // {
-  //   int x_peixe = rand() % 200 - 100;
-  //   int y_peixe = rand() % 200 - 200;
-  //   int z_peixe = rand() % 200 - 100;
-  //   glTranslatef(x_peixe,y_peixe,z_peixe);
-  //   desenhaObjeto(peixe, 1);
-  // }
-  // glPopMatrix();
-
-  //--------------------------------------------------------
-
-  // leão marinho
-  // glPushMatrix();
-  // glColor3f(1, 0, 1);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(0, -5, 0);
-
-  // desenhaObjeto(leao, 400);
-  // glPopMatrix();
 
   glutSwapBuffers();
 }
@@ -377,14 +389,13 @@ void reshape(GLsizei width, GLsizei height)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+  gluPerspective(45.0f, aspect, 0.2f, 100.0f);
 }
 
 // Terminando coisas do opengl
 
 int main(int argc, char **argv)
 {
-  // imprimeObjeto(obj);
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE);
   glutInitWindowSize(640, 480);
