@@ -3,19 +3,19 @@
 using namespace std;
 #define PI 3.14159265
 
-struct vertice
-{
+struct vertice // struct responsavel por armazenar pontos no espaco 3d
+{              //
   int id;
   double x, y, z;
 };
 
-struct face
+struct face // struct responsavel por armazenar um conjunto de 3 pontos que formam um triangulo
 {
   int idvertice1, idvertice2, idvertice3;
   vertice vert1, vert2, vert3;
 };
 
-struct objeto3d
+struct objeto3d // struct que armazena cunjuntos de vertices e faces, que podem representar um objeto 3d
 {
   vector<vertice> vertices;
   vector<face> faces;
@@ -42,10 +42,10 @@ vector<string> quebraString(string &str)
   return tokens;
 }
 
-objeto3d leObjeto(string arquivo)
-{
-  ifstream objeto;
-  objeto.open(arquivo);
+objeto3d leObjeto(string arquivo) // parser de arquivos .obj, separa cada linha do texto em
+{                                 // varios tokens (palavras), usando espaco e '/' como
+  ifstream objeto;                // delimitadores, e atribui os valores lidos a objetos do tipo
+  objeto.open(arquivo);           // objeto 3d
   string linha;
   objeto3d obj;
   int contadorVertices = 0; // numero do vertice, usado para indexar vertices
@@ -56,7 +56,7 @@ objeto3d leObjeto(string arquivo)
     vector<string> tokens;
     tokens = quebraString(linha);
 
-    if (tokens[0] == "v")
+    if (tokens[0] == "v") // indica que o primeiro token da linha e um 'v', ou seja, e um vertice
     {
       vertice v;
 
@@ -68,7 +68,7 @@ objeto3d leObjeto(string arquivo)
 
       obj.vertices.push_back(v);
     }
-    else if (tokens[0] == "f")
+    else if (tokens[0] == "f")  // indica que o primeiro token e um 'f', ou seja, e uma face
     {
       face f;
 
@@ -98,14 +98,14 @@ objeto3d leObjeto(string arquivo)
 //
 //-------------------------------------------------------------------------------------------------------
 
-GLint rotacao = 0;
-bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
-bool andarPraFrente = 0, andarPraTras = 0;
-bool subir = 0, descer = 0;
-bool vistaDeFora = 1;
-bool ajuda = 0;
 char title[] = "Yellow submarine";
-objeto3d submarino = leObjeto("submarine.obj");
+GLint rotacao = 0;                                         // armazena rotacao atual do submarino
+bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0; // armazenam estado do botao de virar a visao
+bool andarPraFrente = 0, andarPraTras = 0;                 // armazena estado do botao de frente/re
+bool subir = 0, descer = 0;                                // armazena estado do botao de mover verticalmente
+bool vistaDeFora = 1;                                      // ponto de vista de dentro ou fora do submarino
+bool ajuda = 0;                                            // ligar/desligar menu de ajuda
+objeto3d submarino = leObjeto("submarine.obj");            // armazenam objetos lidos e retornados pelo parser
 objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
 objeto3d leao = leObjeto("leao_marinho.obj");
@@ -113,27 +113,18 @@ objeto3d peixe = leObjeto("fish.obj");
 int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
 int y_peixe[100];
 int z_peixe[100];
-int x_navio[10];
+int x_navio[10]; // posicoes do navio
 int z_navio[10];
 int rot_navio[10];
 GLdouble posx = 0.0; // posição que será usada para referência para câmera
 GLdouble posy = 0.0;
 GLdouble posz = 0.0;
-GLdouble centroSubmarinoX = 0.0; // posição que será usada como referência para objetos no mapa
-GLdouble centroSubmarinoY = 0.0;
-GLdouble centroSubmarinoZ = 0.0;
-GLfloat verticesQuadrado[8][3] = {{-1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {-1.0, -1.0, -1.0}, {-1.0, 1.0, -1.0}, {1.0, 1.0, -1.0}, {1.0, -1.0, -1.0}};
-
 GLdouble posicaoAtualSubmarinoX = 0.0;
-// GLdouble posicaoAtualSubmarinoY = 0.0;
 GLdouble posicaoAtualSubmarinoZ = 0.0;
 
-vector<string> texto;
-
-void escreve()
+void escreve() // funcao responsavel por escrever texto na tela
 {
-
-  vector<string> texto;
+  vector<string> texto; // vetor que armazena strings que aparecerao na tela
   texto.push_back("Comandos do simulador");
   texto.push_back("Up (tecla direcional)  -  Mover (verticalmente para cima)");
   texto.push_back("Down (tecla direcional)  -  Mover (verticalmente) para baixo");
@@ -146,14 +137,11 @@ void escreve()
   texto.push_back("H ou h   -   Apresentar/Ocultar um menu de ajuda (descrevendo os comandos do simulador)");
 
   float conty = 0.1;
-  for (int j = 0; j < texto.size(); j++)
+  for (int j = 0; j < texto.size(); j++) // realiza as transformacoes necessarias para exibir o texto
   {
     glPushMatrix();
-
     glColor3f(1, 0, 0);
-    //  glTranslatef(posx-1, posy+1, posz);
     glTranslatef(posx - 1, posy + 1.1 - conty, posz);
-
     glScalef(1 / 3500.38, 1 / 3500.38, 1 / 3500.38);
     for (int i = 0; i < texto[j].size(); i++)
     {
@@ -164,7 +152,7 @@ void escreve()
   }
 }
 
-void iniciaPosicoesAleatorias()
+void iniciaPosicoesAleatorias() // inicia posicoes aleatorias de objetos no mapa
 {
   for (int i = 0; i < 100; i++)
   {
@@ -174,57 +162,45 @@ void iniciaPosicoesAleatorias()
   }
   for (int i = 0; i < 10; i++)
   {
-    x_navio[i] = rand() % 100 - 50;
-    z_navio[i] = rand() % 100 - 50;
+    x_navio[i] = rand() % 80 - 40;
+    z_navio[i] = rand() % 80 - 40;
     rot_navio[i] = rand() % 360;
   }
 }
 
 void initGL()
 {
-  glClearColor(0, 1, 1, 0.3); // cor para limpeza do buffer
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
+  glClearColor(0, 1, 1, 0.3);  // cor para limpeza do buffer, céu
+  glMatrixMode(GL_PROJECTION); //
+  glLoadIdentity();            //
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-  gluPerspective(45.0f, (GLdouble)1200 / 1080, 0.1f, 100.0f);
+  glEnable(GL_BLEND); // ativa a mistura de objetos quando estes se interceptam
+  gluPerspective(45.0f, 1, 0.1f, 100.0f);
   glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);
 }
 
-void timerMovimentacaoSubmarino(int tempo)
-{
-  // GLint temp = - rotacao + 90;
-
-  if (rodarSentidoHorario)
-  {
+void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os sinais de teclado
+{                                          // altera os valores das variaveis durante a movimentacao
+  if (rodarSentidoHorario)                 // do submarino. essa funcao tem uma callback com timer de
+  {                                        // 10 ms, que fica sujeito a performance da maquina
     rotacao += 1;
     rotacao %= 360;
-    cout << "rotacao: " << rotacao << " graus" << endl;
+    // cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (rodarSentidoAntiHorario)
   {
     rotacao -= 1;
     if (rotacao < 0)
       rotacao = 360;
-    cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (andarPraFrente)
   {
-    // posx -= sin(rotacao) / 0.1;
-    // posz -= cos(rotacao) / 0.1;
     posz -= 0.05;
-    posicaoAtualSubmarinoX += sin(rotacao * PI / 180) * 0.05;
-    posicaoAtualSubmarinoZ -= cos(rotacao * PI / 180) * 0.05;
-    cout << fixed << setprecision(3) << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
   }
   else if (andarPraTras)
   {
     posz += 0.05;
-    posicaoAtualSubmarinoX -= sin(rotacao * PI / 180) * 0.05;
-    posicaoAtualSubmarinoZ += cos(rotacao * PI / 180) * 0.05;
-    cout << fixed << setprecision(3) << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
   }
   else if (subir)
   {
@@ -240,10 +216,10 @@ void timerMovimentacaoSubmarino(int tempo)
   glutTimerFunc(10, timerMovimentacaoSubmarino, 0);
 }
 
-void keyboardNormal(unsigned char key, int x, int y)
-{
-  if (key == 'W' || key == 'w')
-  {
+void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado normal, ou seja,
+{                                                    // as teclas que nao sao setas
+  if (key == 'W' || key == 'w')                      // note que so trata o evento de pressionar,
+  {                                                  // e nao de soltar uma tecla
     andarPraFrente = true;
   }
   else if (key == 'S' || key == 's')
@@ -267,9 +243,8 @@ void keyboardNormal(unsigned char key, int x, int y)
   }
 }
 
-void keyboardEspecial(int key, int x, int y)
+void keyboardEspecial(int key, int x, int y) // trata eventos de pressionar teclas de seta
 {
-
   if (key == GLUT_KEY_UP)
   {
     subir = true;
@@ -286,12 +261,10 @@ void keyboardEspecial(int key, int x, int y)
   {
     rodarSentidoAntiHorario = true;
   }
-
-  // cout << posx << " / " << posy << " / " << posz << " / " << (int)rotacao % 360 << " graus" << endl;
 }
 
-void keyboardNormal_soltar(unsigned char key, int x, int y)
-{
+void keyboardNormal_soltar(unsigned char key, int x, int y) // trata eventos de soltar uma tecla
+{                                                           // para teclas normais
   if (key == 'W' || key == 'w')
   {
     andarPraFrente = false;
@@ -302,7 +275,7 @@ void keyboardNormal_soltar(unsigned char key, int x, int y)
   }
 }
 
-void keyboardEspecial_soltar(int key, int x, int y)
+void keyboardEspecial_soltar(int key, int x, int y) // trata eventos de soltar uma tecla de seta
 {
   if (key == GLUT_KEY_UP)
   {
@@ -322,24 +295,9 @@ void keyboardEspecial_soltar(int key, int x, int y)
   }
 }
 
-void quad(int a, int b, int c, int d, int ncolor)
-{
-  // if (ncolor == 4)
-  glColor4f(0, 0, 1, 0.9);
-  // else
-  //   glColor4f(1, 0, 1, 0.5);
-
-  glBegin(GL_QUADS);
-  glVertex3fv(verticesQuadrado[a]);
-  glVertex3fv(verticesQuadrado[b]);
-  glVertex3fv(verticesQuadrado[c]);
-  glVertex3fv(verticesQuadrado[d]);
-  glEnd();
-}
-
-void desenhaObjeto(objeto3d &obj, GLdouble multiplicador)
-{
-  glBegin(GL_TRIANGLES);
+void desenhaObjeto(objeto3d &obj, GLdouble multiplicador) // funcao responsavel por desenhar os triangulos
+{                                                         // do objeto na tela, usando o vetor de vertices
+  glBegin(GL_TRIANGLES);                                  // e arestas no objeto "objeto3d"
   for (int i = 0; i < obj.faces.size(); i++)
   {
     glVertex3f(obj.faces[i].vert2.x / multiplicador, obj.faces[i].vert2.y / multiplicador, obj.faces[i].vert2.z / multiplicador);
@@ -349,38 +307,37 @@ void desenhaObjeto(objeto3d &obj, GLdouble multiplicador)
   glEnd();
 }
 
-void display()
-{
+void display() // responsavel por exibir os elementos do jogo na tela
+{              // e organizar os objetos na tela
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
-  if (vistaDeFora)
-    gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);
-  else
-    gluLookAt(0, posy, posz - 1, 0, posy, posz - 1.5, 0, 1, 0);
+  // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
+  // ou seja, o acompanha no eixo y e eixo z
 
-  if (ajuda)
-    escreve();
+  if (vistaDeFora)                                              // enxerga o submarino por cima
+    gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);   // e um pouco por trás
+  else                                                          // ponto de vista da frente do submarino
+    gluLookAt(0, posy, posz - 1, 0, posy, posz - 1.5, 0, 1, 0); //
 
-  // submarino
-  glPushMatrix();
-  glColor4f(1, 1, 0, 1);
+  if (ajuda)   // exibe menu de ajuda
+    escreve(); //
+
+  glPushMatrix();        // exibe o submarino, transladado no eixo y
+  glColor4f(1, 1, 0, 1); // e no eixo z para representar seu deslocamento
   glTranslatef(0, posy, posz);
   glRotatef(-90, 1, 0, 0);
   desenhaObjeto(submarino, 100);
   glPopMatrix();
 
-  // oceano
-  glPushMatrix();
-  glColor4f(0.0f, 0.0f, 1.0f, 0.3);
+  glPushMatrix();                   // oceano, representado por um cubo com centro em -50
+  glColor4f(0.0f, 0.0f, 1.0f, 0.3); //
   glTranslatef(0, -50, 0);
   glutSolidCube(100);
   glPopMatrix();
 
-  //--------------------------------------------------------
-  // peixes
-  for (int i = 0; i < 100; i++)
-  {
+  for (int i = 0; i < 100; i++) // exibe os peixes que aparecem em regioes aleatorias
+  {                             // no fundo do oceano
     glPushMatrix();
     glColor3f(1, 0, 0);
     glRotatef(rotacao, 0, 1, 0);
@@ -389,17 +346,13 @@ void display()
     glPopMatrix();
   }
 
-  //--------------------------------------------------------
-
-  // navios
-  glPushMatrix();
+  glPushMatrix(); // exibe navios em posicoes aleatorias na superficie do oceano
   glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
   desenhaObjeto(navio, 0.3);
   glPopMatrix();
 
-  glPushMatrix();
   for (int i = 0; i < 10; i++)
   {
     glPushMatrix();
@@ -410,9 +363,6 @@ void display()
     desenhaObjeto(navio, 1);
     glPopMatrix();
   }
-  glPopMatrix();
-
-  //--------------------------------------------------------
 
   // leão marinho
   // glPushMatrix();
@@ -422,7 +372,6 @@ void display()
   // desenhaObjeto(leao, 400);
   // glPopMatrix();
 
-  //--------------------------------------------------------
   //cavalo marinho
   // glPushMatrix();
   // glColor3f(1, 0, 1);
@@ -431,7 +380,18 @@ void display()
   // desenhaObjeto(cavalo, 200);
   // glPopMatrix();
 
-  glutSwapBuffers();
+  glutSwapBuffers(); // troca o double buffer para exibir a imagem mais rapidamente na tela
+}
+
+void reshape(GLsizei width, GLsizei height)
+{
+  if (height == 0)
+    height = 1;
+  GLfloat aspect = (GLfloat)width / (GLfloat)height;
+
+  glViewport(0, 0, width, height);
+
+  gluPerspective(45.0f, aspect, 0.2f, 100.0f);
 }
 
 int main(int argc, char **argv)
@@ -443,6 +403,7 @@ int main(int argc, char **argv)
   glutInitWindowPosition(800, 50);
   glutCreateWindow(title);
   glutDisplayFunc(display);
+  glutReshapeFunc(reshape);
   glEnable(GL_DEPTH_TEST);
   glutKeyboardFunc(keyboardNormal);
   glutSpecialFunc(keyboardEspecial);
