@@ -21,7 +21,7 @@ struct objeto3d
   vector<face> faces;
 };
 
-vector<string> quebraString(string str)
+vector<string> quebraString(string &str)
 {
   vector<string> tokens;
   string temp = "";
@@ -90,25 +90,6 @@ objeto3d leObjeto(string arquivo)
   return obj;
 }
 
-void imprimeObjeto(objeto3d obj)
-{
-  for (int i = 0; i < 10; i++) // imprime os vertices
-  {
-    cout << obj.vertices[i].id << " " << obj.vertices[i].x << " " << obj.vertices[i].y
-         << " " << obj.vertices[i].x << endl;
-  }
-
-  for (int i = 0; i < 10; i++) // imprime as faces
-  {
-    cout << obj.faces[i].vert1.id << " " << obj.faces[i].vert1.x << " "
-         << obj.faces[i].vert1.y << " " << obj.faces[i].vert1.z << "  //  "
-         << obj.faces[i].vert2.id << " " << obj.faces[i].vert2.x << " "
-         << obj.faces[i].vert2.y << " " << obj.faces[i].vert2.z << "  //  "
-         << obj.faces[i].vert3.id << " " << obj.faces[i].vert3.x << " "
-         << obj.faces[i].vert3.y << " " << obj.faces[i].vert3.z << endl;
-  }
-}
-
 //-------------------------------------------------------------------------------------------------------
 //
 //
@@ -117,11 +98,12 @@ void imprimeObjeto(objeto3d obj)
 //
 //-------------------------------------------------------------------------------------------------------
 
-GLint rotacao = 1;
+GLint rotacao = 0;
 bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
 bool andarPraFrente = 0, andarPraTras = 0;
 bool subir = 0, descer = 0;
 bool vistaDeFora = 1;
+bool ajuda = 0;
 char title[] = "Yellow submarine";
 objeto3d submarino = leObjeto("submarine.obj");
 objeto3d cavalo = leObjeto("cavalo.obj");
@@ -131,6 +113,9 @@ objeto3d peixe = leObjeto("fish.obj");
 int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
 int y_peixe[100];
 int z_peixe[100];
+int x_navio[10];
+int z_navio[10];
+int rot_navio[10];
 GLdouble posx = 0.0; // posição que será usada para referência para câmera
 GLdouble posy = 0.0;
 GLdouble posz = 0.0;
@@ -143,40 +128,86 @@ GLdouble posicaoAtualSubmarinoX = 0.0;
 // GLdouble posicaoAtualSubmarinoY = 0.0;
 GLdouble posicaoAtualSubmarinoZ = 0.0;
 
-void initGL()
+vector<string> texto;
+
+void escreve()
+{
+
+  vector<string> texto;
+  texto.push_back("Comandos do simulador");
+  texto.push_back("Up (tecla direcional)  -  Mover (verticalmente para cima)");
+  texto.push_back("Down (tecla direcional)  -  Mover (verticalmente) para baixo");
+  texto.push_back("Down (tecla direcional)  -  Mover (verticalmente) para baixo");
+  texto.push_back("Left (tecla direcional)  -  Virar (aproximadamente) 5 graus para a direita");
+  texto.push_back("Right (tecla direcional) -  Virar (aproximadamente) 5 graus para a esquerda");
+  texto.push_back("S ou s  -  Ré");
+  texto.push_back("F ou f  -   Ponto de vista de fora do submarino");
+  texto.push_back("I ou i  -   Ponto de vista de dentro do submarino");
+  texto.push_back("H ou h   -   Apresentar/Ocultar um menu de ajuda (descrevendo os comandos do simulador)");
+
+  float conty = 0.1;
+  for (int j = 0; j < texto.size(); j++)
+  {
+    glPushMatrix();
+
+    glColor3f(1, 0, 0);
+    //  glTranslatef(posx-1, posy+1, posz);
+    glTranslatef(posx - 1, posy + 1.1 - conty, posz);
+
+    glScalef(1 / 3500.38, 1 / 3500.38, 1 / 3500.38);
+    for (int i = 0; i < texto[j].size(); i++)
+    {
+      glutStrokeCharacter(GLUT_STROKE_ROMAN, texto[j][i]);
+    }
+    glPopMatrix();
+    conty += 0.05;
+  }
+}
+
+void iniciaPosicoesAleatorias()
 {
   for (int i = 0; i < 100; i++)
   {
-    x_peixe[i] = rand() % 200 - 100;
-    y_peixe[i] = rand() % 200 - 200;
-    z_peixe[i] = rand() % 200 - 100;
+    x_peixe[i] = rand() % 100 - 50;
+    y_peixe[i] = rand() % 100 - 100;
+    z_peixe[i] = rand() % 100 - 50;
   }
-  glClearColor(0, 1, 1, 1); // CÉU
-  // glClearDepth(1.0f);         // Set background depth to farthest
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  // glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  // glDepthMask(GL_FALSE);
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_DEPTH_TEST); // Enable depth testing for z-culling
+  for (int i = 0; i < 10; i++)
+  {
+    x_navio[i] = rand() % 100 - 50;
+    z_navio[i] = rand() % 100 - 50;
+    rot_navio[i] = rand() % 360;
+  }
 }
 
-void rodarSubmarino(int tempo)
+void initGL()
 {
-  // glLoadIdentity();
+  glClearColor(0, 1, 1, 0.3); // cor para limpeza do buffer
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  gluPerspective(45.0f, (GLdouble)1200 / 1080, 0.1f, 100.0f);
+  glMatrixMode(GL_MODELVIEW);
+  glClearDepth(1.0f);
+}
+
+void timerMovimentacaoSubmarino(int tempo)
+{
+  // GLint temp = - rotacao + 90;
+
   if (rodarSentidoHorario)
   {
     rotacao += 1;
-    rotacao = rotacao % 360;
+    rotacao %= 360;
     cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (rodarSentidoAntiHorario)
   {
-    if (rotacao == 0)
-    {
-      rotacao = 360;
-    }
     rotacao -= 1;
+    if (rotacao < 0)
+      rotacao = 360;
     cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (andarPraFrente)
@@ -184,21 +215,21 @@ void rodarSubmarino(int tempo)
     // posx -= sin(rotacao) / 0.1;
     // posz -= cos(rotacao) / 0.1;
     posz -= 0.05;
-    if (rotacao % 360)
-      posicaoAtualSubmarinoX -= sin(rotacao * PI / 180) * 0.05;
+    posicaoAtualSubmarinoX += sin(rotacao * PI / 180) * 0.05;
     posicaoAtualSubmarinoZ -= cos(rotacao * PI / 180) * 0.05;
-    cout << fixed << setprecision(3) << "posz antigo = " << posz << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
+    cout << fixed << setprecision(3) << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
   }
   else if (andarPraTras)
   {
     posz += 0.05;
-    posicaoAtualSubmarinoX += sin(rotacao * PI / 180) * 0.05;
+    posicaoAtualSubmarinoX -= sin(rotacao * PI / 180) * 0.05;
     posicaoAtualSubmarinoZ += cos(rotacao * PI / 180) * 0.05;
-    cout << fixed << setprecision(3) << "posz antigo = " << posz << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
+    cout << fixed << setprecision(3) << " /// posx = " << posicaoAtualSubmarinoX << "  posz = " << posicaoAtualSubmarinoZ << endl;
   }
   else if (subir)
   {
-    posy += 0.05;
+    if (posy <= 0)
+      posy += 0.05;
   }
   else if (descer)
   {
@@ -206,7 +237,7 @@ void rodarSubmarino(int tempo)
   }
 
   glutPostRedisplay();
-  glutTimerFunc(10, rodarSubmarino, 0);
+  glutTimerFunc(10, timerMovimentacaoSubmarino, 0);
 }
 
 void keyboardNormal(unsigned char key, int x, int y)
@@ -227,6 +258,11 @@ void keyboardNormal(unsigned char key, int x, int y)
   else if (key == 'I' || key == 'i')
   {
     vistaDeFora = false;
+    glutPostRedisplay();
+  }
+  else if (key == 'H' || key == 'h')
+  {
+    ajuda = !ajuda;
     glutPostRedisplay();
   }
 }
@@ -301,14 +337,14 @@ void quad(int a, int b, int c, int d, int ncolor)
   glEnd();
 }
 
-void desenhaObjeto(objeto3d obj, int multiplicador)
+void desenhaObjeto(objeto3d &obj, GLdouble multiplicador)
 {
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
-    glVertex3f(obj.faces[i].vert2.x / (float)multiplicador, obj.faces[i].vert2.y / (float)multiplicador, obj.faces[i].vert2.z / (float)multiplicador);
-    glVertex3f(obj.faces[i].vert1.x / (float)multiplicador, obj.faces[i].vert1.y / (float)multiplicador, obj.faces[i].vert1.z / (float)multiplicador);
-    glVertex3f(obj.faces[i].vert3.x / (float)multiplicador, obj.faces[i].vert3.y / (float)multiplicador, obj.faces[i].vert3.z / (float)multiplicador);
+    glVertex3f(obj.faces[i].vert2.x / multiplicador, obj.faces[i].vert2.y / multiplicador, obj.faces[i].vert2.z / multiplicador);
+    glVertex3f(obj.faces[i].vert1.x / multiplicador, obj.faces[i].vert1.y / multiplicador, obj.faces[i].vert1.z / multiplicador);
+    glVertex3f(obj.faces[i].vert3.x / multiplicador, obj.faces[i].vert3.y / multiplicador, obj.faces[i].vert3.z / multiplicador);
   }
   glEnd();
 }
@@ -316,7 +352,6 @@ void desenhaObjeto(objeto3d obj, int multiplicador)
 void display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   if (vistaDeFora)
@@ -324,21 +359,22 @@ void display()
   else
     gluLookAt(0, posy, posz - 1, 0, posy, posz - 1.5, 0, 1, 0);
 
-  // cubo representando oceano
-  glPushMatrix();
+  if (ajuda)
+    escreve();
 
-  glColor4f(0.0f, 0.0f, 1.0f, 0.5); // Color Blue
-  // glRotatef(rotacao, 0, 1, 0);
+  // submarino
+  glPushMatrix();
+  glColor4f(1, 1, 0, 1);
+  glTranslatef(0, posy, posz);
+  glRotatef(-90, 1, 0, 0);
+  desenhaObjeto(submarino, 100);
+  glPopMatrix();
+
+  // oceano
+  glPushMatrix();
+  glColor4f(0.0f, 0.0f, 1.0f, 0.3);
   glTranslatef(0, -50, 0);
   glutSolidCube(100);
-
-  // quad(1, 2, 3, 0, 0);
-  // quad(6, 7, 3, 2, 1);
-  // quad(3, 7, 4, 0, 2);
-  // quad(5, 6, 2, 1, 3);
-  // quad(7, 6, 5, 4, 4);
-  // quad(4, 5, 1, 0, 5);
-  // glScalef(100, 100, 100);
   glPopMatrix();
 
   //--------------------------------------------------------
@@ -355,60 +391,66 @@ void display()
 
   //--------------------------------------------------------
 
-  // navio
+  // navios
   glPushMatrix();
   glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
-
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
+  desenhaObjeto(navio, 0.3);
+  glPopMatrix();
 
-  desenhaObjeto(navio, 1);
+  glPushMatrix();
+  for (int i = 0; i < 10; i++)
+  {
+    glPushMatrix();
+    glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
+    glRotatef(rotacao, 0, 1, 0);
+    glTranslatef(x_navio[i], 0, z_navio[i]);
+    glRotatef(rot_navio[i], 0, 1, 0);
+    desenhaObjeto(navio, 1);
+    glPopMatrix();
+  }
   glPopMatrix();
 
   //--------------------------------------------------------
-  // submarino
-  glPushMatrix();
 
-  glTranslatef(0, posy, posz);
-  glRotatef(-90, 1, 0, 0);
+  // leão marinho
+  // glPushMatrix();
+  // glColor3f(1, 0, 1);
+  // glRotatef(rotacao, 0, 1, 0);
+  // glTranslatef(5, -5, 5);
+  // desenhaObjeto(leao, 400);
+  // glPopMatrix();
 
-  glColor4f(1, 1, 0, 1);
-  desenhaObjeto(submarino, 100);
-  glPopMatrix();
+  //--------------------------------------------------------
+  //cavalo marinho
+  // glPushMatrix();
+  // glColor3f(1, 0, 1);
+  // glRotatef(rotacao, 0, 1, 0);
+  // glTranslatef(2, -2, 2);
+  // desenhaObjeto(cavalo, 200);
+  // glPopMatrix();
 
   glutSwapBuffers();
 }
 
-void reshape(GLsizei width, GLsizei height)
-{
-  if (height == 0)
-    height = 1;
-  GLfloat aspect = (GLfloat)width / (GLfloat)height;
-
-  glViewport(0, 0, width, height);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(45.0f, aspect, 0.2f, 100.0f);
-}
-
-// Terminando coisas do opengl
-
 int main(int argc, char **argv)
 {
+  iniciaPosicoesAleatorias();
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE);
-  glutInitWindowSize(640, 480);
-  glutInitWindowPosition(50, 50);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitWindowSize(1200.0 / 2.0, 1080.0 / 2.0);
+  glutInitWindowPosition(800, 50);
   glutCreateWindow(title);
   glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
+  glEnable(GL_DEPTH_TEST);
   glutKeyboardFunc(keyboardNormal);
   glutSpecialFunc(keyboardEspecial);
   glutKeyboardUpFunc(keyboardNormal_soltar);
   glutSpecialUpFunc(keyboardEspecial_soltar);
   initGL();
-  glutTimerFunc(100, rodarSubmarino, 0);
+
+  glutTimerFunc(10, timerMovimentacaoSubmarino, 0);
   glutMainLoop();
 
   return 0;
