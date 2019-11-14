@@ -12,6 +12,46 @@ GLdouble upX = 0.0;
 GLdouble upY = 0.0;
 GLdouble upZ = 0.0;
 
+
+
+vector <string> texto;
+
+
+void escreve()
+{
+
+vector<string> texto;
+texto.push_back("Comandos do simulador");
+  texto.push_back("Up (tecla direcional)  -  Mover (verticalmente para cima)");
+texto.push_back("Down (tecla direcional)  -  Mover (verticalmente) para baixo");
+texto.push_back("Down (tecla direcional)  -  Mover (verticalmente) para baixo");
+texto.push_back("Left (tecla direcional)  -  Virar (aproximadamente) 5 graus para a direita");
+texto.push_back("Right (tecla direcional) -  Virar (aproximadamente) 5 graus para a esquerda");
+texto.push_back("S ou s  -  Ré");
+texto.push_back("F ou f  -   Ponto de vista de fora do submarino");
+texto.push_back("I ou i  -   Ponto de vista de dentro do submarino");
+texto.push_back("H ou h   -   Apresentar/Ocultar um menu de ajuda (descrevendo os comandos do simulador)");
+
+
+float conty= 0.1;
+for (int j =0; j<texto.size(); j++){
+  glPushMatrix();
+
+    glColor3f(1,0,0);
+  //  glTranslatef(posx-1, posy+1, posz);
+        glTranslatef(posx-1, posy+1.1-conty, posz);
+
+    glScalef(1/3500.38, 1/3500.38, 1/3500.38);
+    for( int i=0; i<texto[j].size();i++)
+    {
+        glutStrokeCharacter(GLUT_STROKE_ROMAN, texto[j][i]);
+    }
+        glPopMatrix();
+    conty+=0.05;
+
+}
+}
+
 struct vertice
 {
   int id;
@@ -123,6 +163,7 @@ bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0;
 bool andarPraFrente = 0, andarPraTras = 0;
 bool subir = 0, descer = 0;
 bool vistaDeFora = 1;
+bool ajuda=1;
 char title[] = "Yellow submarine";
 objeto3d submarino = leObjeto("submarine.obj");
 objeto3d cavalo = leObjeto("cavalo.obj");
@@ -131,13 +172,23 @@ objeto3d leao = leObjeto("leao_marinho.obj");
 
 void initGL()
 {
-  glClearColor(0, 1, 1, 0.3); // Set background color to black and opaque
+
+
+      glClearColor(0, 1, 1, 0.3); // cor para limpeza do buffer
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+
+
+      gluPerspective(45.0f, 1, 0.1f, 100.0f);
+    glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);         // Set background depth to farthest
   // glEnable(GL_DEPTH_TEST);    // Enable depth testing for z-culling
-  glDepthFunc(GL_NEVER); // Set the type of depth-test
-  // glEnable(GL_CULL_FACE);
-  glShadeModel(GL_SMOOTH);                           // Enable smooth shading
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
+  //glDepthFunc(GL_NEVER); // Set the type of depth-test
+
+
+  //glShadeModel(GL_SMOOTH);                           // Enable smooth shading
+  //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
 }
 
 void rodarSubmarino(int tempo)
@@ -192,6 +243,14 @@ void keyboardNormal(unsigned char key, int x, int y)
     vistaDeFora = false;
     glutPostRedisplay();
   }
+  else if (key == 'H' || key == 'h')
+  {
+    ajuda = !ajuda;
+    glutPostRedisplay();
+  }
+
+
+
 }
 
 void keyboardEspecial(int key, int x, int y)
@@ -302,13 +361,17 @@ void desenhaObjeto(objeto3d obj, int multiplicador)
 void display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   if (vistaDeFora)
-    gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);
+      gluLookAt(0, posy + 1, posz + 3, 0, posy, posz, 0, 1, 0);
   else
     gluLookAt(0, posy, posz - 1, 0, posy, posz - 1.5, 0, 1, 0);
+
+
+if (ajuda)
+  escreve();
+
 
   glPushMatrix();
   glColor3f(0.0f, 0.0f, 1.0f); // Color Blue
@@ -356,47 +419,53 @@ void display()
   //--------------------------------------------------------
 
   // leão marinho
-  // glPushMatrix();
-  // glColor3f(1, 0, 1);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(0, -5, 0);
+  glPushMatrix();
+   glColor3f(1, 0, 1);
+   glRotatef(rotacao, 0, 1, 0);
+   glTranslatef(5, -5, 5);
 
-  // desenhaObjeto(leao, 400);
-  // glPopMatrix();
+   desenhaObjeto(leao, 400);
+   glPopMatrix();
+
+
+//cavalo marinho
+ glPushMatrix();
+   glColor3f(1, 0, 1);
+   glRotatef(rotacao, 0, 1, 0);
+   glTranslatef(2, -2, 2);
+
+   desenhaObjeto(cavalo, 200);
+   glPopMatrix();
+
+
+
 
   glutSwapBuffers();
 }
 
-void reshape(GLsizei width, GLsizei height)
-{
-  if (height == 0)
-    height = 1;
-  GLfloat aspect = (GLfloat)width / (GLfloat)height;
 
-  glViewport(0, 0, width, height);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(45.0f, aspect, 0.1f, 100.0f);
-}
 
 // Terminando coisas do opengl
 
 int main(int argc, char **argv)
 {
+
+
+
   // imprimeObjeto(obj);
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE);
-  glutInitWindowSize(640, 480);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitWindowSize(1200,1080);
   glutInitWindowPosition(50, 50);
   glutCreateWindow(title);
   glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
+  glEnable(GL_DEPTH_TEST);
   glutKeyboardFunc(keyboardNormal);
   glutSpecialFunc(keyboardEspecial);
   glutKeyboardUpFunc(keyboardNormal_soltar);
   glutSpecialUpFunc(keyboardEspecial_soltar);
   initGL();
+
   glutTimerFunc(100, rodarSubmarino, 0);
   glutMainLoop();
 
