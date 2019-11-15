@@ -104,12 +104,14 @@ bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0; // armazenam estado d
 bool andarPraFrente = 0, andarPraTras = 0;                 // armazena estado do botao de frente/re
 bool subir = 0, descer = 0;                                // armazena estado do botao de mover verticalmente
 bool vistaDeFora = 1;                                      // ponto de vista de dentro ou fora do submarino
-bool ajuda = 0;                                            // ligar/desligar menu de ajuda
+bool ajuda = 1;                                            // ligar/desligar menu de ajuda
 objeto3d submarino = leObjeto("submarine.obj");            // armazenam objetos lidos e retornados pelo parser
 objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
 objeto3d leao = leObjeto("leao_marinho.obj");
 objeto3d peixe = leObjeto("fish.obj");
+objeto3d peixe_espada = leObjeto("peixe_espada.obj");
+objeto3d tubarao_martelo = leObjeto("tubarao_martelo.obj");
 int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
 int y_peixe[100];
 int z_peixe[100];
@@ -186,7 +188,6 @@ void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os si
   {                                        // 10 ms, que fica sujeito a performance da maquina
     rotacao += 1;
     rotacao %= 360;
-    // cout << "rotacao: " << rotacao << " graus" << endl;
   }
   else if (rodarSentidoAntiHorario)
   {
@@ -365,20 +366,40 @@ void display() // responsavel por exibir os elementos do jogo na tela
   }
 
   // leão marinho
-  // glPushMatrix();
-  // glColor3f(1, 0, 1);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(5, -5, 5);
-  // desenhaObjeto(leao, 400);
-  // glPopMatrix();
+  glPushMatrix();
+   glColor3f(0.4, 0, 0.3);
+   glRotatef(rotacao, 0, 1, 0);
+   glTranslatef(4, -5, 5);
+   desenhaObjeto(leao, 400);
+   glPopMatrix();
 
   //cavalo marinho
-  // glPushMatrix();
-  // glColor3f(1, 0, 1);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(2, -2, 2);
-  // desenhaObjeto(cavalo, 200);
-  // glPopMatrix();
+  glPushMatrix();
+  glColor3f(0.5, 1, 0.5);
+  glRotatef(rotacao, 0, 1, 0);
+  glTranslatef(2, -2, 5);
+  desenhaObjeto(cavalo, 200);
+  glPopMatrix();
+
+  //peixe espada
+  glPushMatrix();
+  glColor3f(0, 0.5, 1);
+  glRotatef(rotacao, 0, 2, 0);
+  glTranslatef(1, -4, 4);
+  desenhaObjeto(peixe_espada, 200);
+  glPopMatrix();
+
+
+// tubarao martelo
+  glPushMatrix();
+  glColor3f(1, 0.5, 1);
+  glRotatef(rotacao, 0, 1, 0);
+  glTranslatef(2, -2, 3);
+  desenhaObjeto(tubarao_martelo, 200);
+  glPopMatrix();
+
+
+
 
   glutSwapBuffers(); // troca o double buffer para exibir a imagem mais rapidamente na tela
 }
