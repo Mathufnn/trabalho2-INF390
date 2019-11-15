@@ -420,8 +420,8 @@ int main(int argc, char **argv)
   iniciaPosicoesAleatorias();
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-  glutInitWindowSize(1200.0 / 2.0, 1080.0 / 2.0);
-  glutInitWindowPosition(800, 50);
+  glutInitWindowSize(1200.0, 1080.0);
+  glutInitWindowPosition(500, 500);
   glutCreateWindow(title);
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
