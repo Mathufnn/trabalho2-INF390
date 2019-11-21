@@ -5,20 +5,33 @@ using namespace std;
 
 struct vertice // struct responsavel por armazenar pontos no espaco 3d
 {              //
-  int id;
   double x, y, z;
+};
+
+struct textura
+{
+  double tx, ty;
+};
+
+struct normal
+{
+  double nx, ny, nz;
 };
 
 struct face // struct responsavel por armazenar um conjunto de 3 pontos que formam um triangulo
 {
-  int idvertice1, idvertice2, idvertice3;
   vertice vert1, vert2, vert3;
+  textura text1, text2, text3;
+  normal norm1, norm2, norm3;
 };
 
-struct objeto3d // struct que armazena cunjuntos de vertices e faces, que podem representar um objeto 3d
+struct objeto3d // struct que armazena conjuntos de vertices e faces, que podem representar um objeto 3d
 {
   vector<vertice> vertices;
   vector<face> faces;
+
+  vector<textura> texturas;
+  vector<normal> normais;
 };
 
 vector<string> quebraString(string &str)
@@ -48,8 +61,7 @@ objeto3d leObjeto(string arquivo) // parser de arquivos .obj, separa cada linha 
   objeto.open(arquivo);           // objeto 3d
   string linha;
   objeto3d obj;
-  int contadorVertices = 0; // numero do vertice, usado para indexar vertices
-  int contadorDeErros = 0;
+  int count = 0;
 
   while (getline(objeto, linha))
   {
@@ -63,12 +75,29 @@ objeto3d leObjeto(string arquivo) // parser de arquivos .obj, separa cada linha 
       v.x = atof(tokens[1].c_str()); // transforma string em float
       v.y = atof(tokens[2].c_str());
       v.z = atof(tokens[3].c_str());
-      v.id = contadorVertices;
-      contadorVertices++;
 
       obj.vertices.push_back(v);
     }
-    else if (tokens[0] == "f")  // indica que o primeiro token e um 'f', ou seja, e uma face
+    else if (tokens[0] == "vt")
+    {
+      textura t;
+
+      t.tx = atof(tokens[1].c_str());
+      t.ty = atof(tokens[2].c_str());
+
+      obj.texturas.push_back(t);
+    }
+    else if (tokens[0] == "vn")
+    {
+      normal n;
+
+      n.nx = atof(tokens[1].c_str());
+      n.ny = atof(tokens[2].c_str());
+      n.nz = atof(tokens[3].c_str());
+
+      obj.normais.push_back(n);
+    }
+    else if (tokens[0] == "f") // indica que o primeiro token e um 'f', ou seja, e uma face
     {
       face f;
 
@@ -76,12 +105,25 @@ objeto3d leObjeto(string arquivo) // parser de arquivos .obj, separa cada linha 
       int v2 = atoi(tokens[4].c_str()) - 1;
       int v3 = atoi(tokens[7].c_str()) - 1;
 
-      f.idvertice1 = v1;
-      f.idvertice2 = v2;
-      f.idvertice3 = v3;
+      int t1 = atoi(tokens[2].c_str()) - 1;
+      int t2 = atoi(tokens[5].c_str()) - 1;
+      int t3 = atoi(tokens[8].c_str()) - 1;
+
+      int n1 = atoi(tokens[3].c_str()) - 1;
+      int n2 = atoi(tokens[6].c_str()) - 1;
+      int n3 = atoi(tokens[9].c_str()) - 1;
+
       f.vert1 = obj.vertices[v1];
       f.vert2 = obj.vertices[v2];
       f.vert3 = obj.vertices[v3];
+
+      f.text1 = obj.texturas[t1];
+      f.text2 = obj.texturas[t2];
+      f.text3 = obj.texturas[t3];
+
+      f.norm1 = obj.normais[n1];
+      f.norm2 = obj.normais[n2];
+      f.norm3 = obj.normais[n3];
 
       obj.faces.push_back(f);
     }
@@ -104,14 +146,14 @@ bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0; // armazenam estado d
 bool andarPraFrente = 0, andarPraTras = 0;                 // armazena estado do botao de frente/re
 bool subir = 0, descer = 0;                                // armazena estado do botao de mover verticalmente
 bool vistaDeFora = 1;                                      // ponto de vista de dentro ou fora do submarino
-bool ajuda = 1;                                            // ligar/desligar menu de ajuda
+bool ajuda = 0;                                            // ligar/desligar menu de ajuda
 objeto3d submarino = leObjeto("submarine.obj");            // armazenam objetos lidos e retornados pelo parser
-objeto3d cavalo = leObjeto("cavalo.obj");
+// objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
-objeto3d leao = leObjeto("leao_marinho.obj");
+// objeto3d leao = leObjeto("leao_marinho.obj");
 objeto3d peixe = leObjeto("fish.obj");
-objeto3d peixe_espada = leObjeto("peixe_espada.obj");
-objeto3d tubarao_martelo = leObjeto("tubarao_martelo.obj");
+// objeto3d peixe_espada = leObjeto("peixe_espada.obj");
+// objeto3d tubarao_martelo = leObjeto("tubarao_martelo.obj");
 int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
 int y_peixe[100];
 int z_peixe[100];
@@ -180,6 +222,11 @@ void initGL()
   gluPerspective(45.0f, 1, 0.1f, 100.0f);
   glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  // glEnable(GL_DIFFUSE);
+  GLfloat lightpos[] = {0., 1., 0., 1.};
+  glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
 }
 
 void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os sinais de teclado
@@ -298,14 +345,18 @@ void keyboardEspecial_soltar(int key, int x, int y) // trata eventos de soltar u
 
 void desenhaObjeto(objeto3d &obj, GLdouble multiplicador) // funcao responsavel por desenhar os triangulos
 {                                                         // do objeto na tela, usando o vetor de vertices
-  glBegin(GL_TRIANGLES);                                  // e arestas no objeto "objeto3d"
+  multiplicador = 1 / multiplicador;                      // e arestas no objeto "objeto3d"
+  glScalef(multiplicador, multiplicador, multiplicador);
+  glBegin(GL_TRIANGLES);
   for (int i = 0; i < obj.faces.size(); i++)
   {
-    glVertex3f(obj.faces[i].vert2.x / multiplicador, obj.faces[i].vert2.y / multiplicador, obj.faces[i].vert2.z / multiplicador);
-    glVertex3f(obj.faces[i].vert1.x / multiplicador, obj.faces[i].vert1.y / multiplicador, obj.faces[i].vert1.z / multiplicador);
-    glVertex3f(obj.faces[i].vert3.x / multiplicador, obj.faces[i].vert3.y / multiplicador, obj.faces[i].vert3.z / multiplicador);
+    glNormal3f(obj.faces[i].norm1.nx, obj.faces[i].norm1.ny, obj.faces[i].norm1.nz);
+    glVertex3f(obj.faces[i].vert2.x, obj.faces[i].vert2.y, obj.faces[i].vert2.z);
+    glVertex3f(obj.faces[i].vert1.x, obj.faces[i].vert1.y, obj.faces[i].vert1.z);
+    glVertex3f(obj.faces[i].vert3.x, obj.faces[i].vert3.y, obj.faces[i].vert3.z);
   }
   glEnd();
+  // multiplicador = 1 / multiplicador;
 }
 
 void display() // responsavel por exibir os elementos do jogo na tela
@@ -324,9 +375,9 @@ void display() // responsavel por exibir os elementos do jogo na tela
   if (ajuda)   // exibe menu de ajuda
     escreve(); //
 
-  glPushMatrix();        // exibe o submarino, transladado no eixo y
-  glColor4f(1, 1, 0, 1); // e no eixo z para representar seu deslocamento
-  glTranslatef(0, posy, posz);
+  glPushMatrix();              // exibe o submarino, transladado no eixo y
+  glColor4f(1, 1, 0, 1);       // e no eixo z para representar seu deslocamento
+  glTranslatef(0, posy, posz); //
   glRotatef(-90, 1, 0, 0);
   desenhaObjeto(submarino, 100);
   glPopMatrix();
@@ -365,41 +416,37 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
-  // leão marinho
-  glPushMatrix();
-   glColor3f(0.4, 0, 0.3);
-   glRotatef(rotacao, 0, 1, 0);
-   glTranslatef(4, -5, 5);
-   desenhaObjeto(leao, 400);
-   glPopMatrix();
+  // // leão marinho
+  // glPushMatrix();
+  // glColor3f(0.4, 0, 0.3);
+  // glRotatef(rotacao, 0, 1, 0);
+  // glTranslatef(4, -5, 5);
+  // desenhaObjeto(leao, 400);
+  // glPopMatrix();
 
-  //cavalo marinho
-  glPushMatrix();
-  glColor3f(0.5, 1, 0.5);
-  glRotatef(rotacao, 0, 1, 0);
-  glTranslatef(2, -2, 5);
-  desenhaObjeto(cavalo, 200);
-  glPopMatrix();
+  // //cavalo marinho
+  // glPushMatrix();
+  // glColor3f(0.5, 1, 0.5);
+  // glRotatef(rotacao, 0, 1, 0);
+  // glTranslatef(2, -2, 5);
+  // desenhaObjeto(cavalo, 200);
+  // glPopMatrix();
 
-  //peixe espada
-  glPushMatrix();
-  glColor3f(0, 0.5, 1);
-  glRotatef(rotacao, 0, 2, 0);
-  glTranslatef(1, -4, 4);
-  desenhaObjeto(peixe_espada, 200);
-  glPopMatrix();
+  // //peixe espada
+  // glPushMatrix();
+  // glColor3f(0, 0.5, 1);
+  // glRotatef(rotacao, 0, 2, 0);
+  // glTranslatef(1, -4, 4);
+  // desenhaObjeto(peixe_espada, 200);
+  // glPopMatrix();
 
-
-// tubarao martelo
-  glPushMatrix();
-  glColor3f(1, 0.5, 1);
-  glRotatef(rotacao, 0, 1, 0);
-  glTranslatef(2, -2, 3);
-  desenhaObjeto(tubarao_martelo, 200);
-  glPopMatrix();
-
-
-
+  // // tubarao martelo
+  // glPushMatrix();
+  // glColor3f(1, 0.5, 1);
+  // glRotatef(rotacao, 0, 1, 0);
+  // glTranslatef(2, -2, 3);
+  // desenhaObjeto(tubarao_martelo, 200);
+  // glPopMatrix();
 
   glutSwapBuffers(); // troca o double buffer para exibir a imagem mais rapidamente na tela
 }
