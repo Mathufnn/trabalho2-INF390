@@ -147,7 +147,8 @@ bool andarPraFrente = 0, andarPraTras = 0;                 // armazena estado do
 bool subir = 0, descer = 0;                                // armazena estado do botao de mover verticalmente
 bool vistaDeFora = 1;                                      // ponto de vista de dentro ou fora do submarino
 bool ajuda = 0;                                            // ligar/desligar menu de ajuda
-objeto3d submarino = leObjeto("submarine.obj");            // armazenam objetos lidos e retornados pelo parser
+bool iluminacao = 0;
+objeto3d submarino = leObjeto("submarine.obj"); // armazenam objetos lidos e retornados pelo parser
 // objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
 // objeto3d leao = leObjeto("leao_marinho.obj");
@@ -222,9 +223,6 @@ void initGL()
   gluPerspective(45.0f, 1, 0.1f, 100.0f);
   glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  // glEnable(GL_DIFFUSE);
   GLfloat lightpos[] = {0., 1., 0., 1.};
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
 }
@@ -288,6 +286,30 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
   {
     ajuda = !ajuda;
     glutPostRedisplay();
+  }
+  else if (key == 'L' || key == 'l')
+  {
+    iluminacao = !iluminacao;
+    if (iluminacao)
+    {
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+      glEnable(GL_COLOR_MATERIAL);
+    }
+    else
+    {
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glDisable(GL_COLOR_MATERIAL);
+    }    
+  }
+  else if (key == 'F' || key == 'f')
+  {
+    // ligar flat shading
+  }
+  else if (key == 'G' || key == 'g')
+  {
+    // ligar gouroud shading
   }
 }
 
@@ -356,7 +378,6 @@ void desenhaObjeto(objeto3d &obj, GLdouble multiplicador) // funcao responsavel 
     glVertex3f(obj.faces[i].vert3.x, obj.faces[i].vert3.y, obj.faces[i].vert3.z);
   }
   glEnd();
-  // multiplicador = 1 / multiplicador;
 }
 
 void display() // responsavel por exibir os elementos do jogo na tela
@@ -380,6 +401,7 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glTranslatef(0, posy, posz); //
   glRotatef(-90, 1, 0, 0);
   desenhaObjeto(submarino, 100);
+  cout << submarino.normais[0].nx << endl;
   glPopMatrix();
 
   glPushMatrix();                   // oceano, representado por um cubo com centro em -50
