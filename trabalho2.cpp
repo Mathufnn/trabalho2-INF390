@@ -28,10 +28,10 @@ struct face // struct responsavel por armazenar um conjunto de 3 pontos que form
 struct objeto3d // struct que armazena conjuntos de vertices e faces, que podem representar um objeto 3d
 {
   vector<vertice> vertices;
-  vector<face> faces;
-
   vector<textura> texturas;
   vector<normal> normais;
+
+  vector<face> faces;
 };
 
 vector<string> quebraString(string &str)
@@ -148,6 +148,7 @@ bool subir = 0, descer = 0;                                // armazena estado do
 bool vistaDeFora = 1;                                      // ponto de vista de dentro ou fora do submarino
 bool ajuda = 0;                                            // ligar/desligar menu de ajuda
 bool iluminacao = 0;
+bool shading = 0;
 objeto3d submarino = leObjeto("submarine.obj"); // armazenam objetos lidos e retornados pelo parser
 // objeto3d cavalo = leObjeto("cavalo.obj");
 objeto3d navio = leObjeto("navio.obj");
@@ -225,6 +226,7 @@ void initGL()
   glClearDepth(1.0f);
   GLfloat lightpos[] = {0., 1., 0., 1.};
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+  glEnable(GL_NORMALIZE);
 }
 
 void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os sinais de teclado
@@ -242,20 +244,20 @@ void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os si
   }
   else if (andarPraFrente)
   {
-    posz -= 0.05;
+    posz -= 0.1;
   }
   else if (andarPraTras)
   {
-    posz += 0.05;
+    posz += 0.1;
   }
   else if (subir)
   {
-    if (posy <= 0)
-      posy += 0.05;
+    if (posy < 0)
+      posy += 0.1;
   }
   else if (descer)
   {
-    posy -= 0.05;
+    posy -= 0.1;
   }
 
   glutPostRedisplay();
@@ -301,15 +303,16 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glDisable(GL_COLOR_MATERIAL);
-    }    
-  }
-  else if (key == 'F' || key == 'f')
-  {
-    // ligar flat shading
+    }
   }
   else if (key == 'G' || key == 'g')
   {
-    // ligar gouroud shading
+    shading = !shading;
+    if (shading)
+      glShadeModel(GL_FLAT);
+    else
+      glShadeModel(GL_SMOOTH);
+    glutPostRedisplay();
   }
 }
 
@@ -373,8 +376,12 @@ void desenhaObjeto(objeto3d &obj, GLdouble multiplicador) // funcao responsavel 
   for (int i = 0; i < obj.faces.size(); i++)
   {
     glNormal3f(obj.faces[i].norm1.nx, obj.faces[i].norm1.ny, obj.faces[i].norm1.nz);
-    glVertex3f(obj.faces[i].vert2.x, obj.faces[i].vert2.y, obj.faces[i].vert2.z);
     glVertex3f(obj.faces[i].vert1.x, obj.faces[i].vert1.y, obj.faces[i].vert1.z);
+
+    glNormal3f(obj.faces[i].norm2.nx, obj.faces[i].norm2.ny, obj.faces[i].norm2.nz);
+    glVertex3f(obj.faces[i].vert2.x, obj.faces[i].vert2.y, obj.faces[i].vert2.z);
+
+    glNormal3f(obj.faces[i].norm3.nx, obj.faces[i].norm3.ny, obj.faces[i].norm3.nz);
     glVertex3f(obj.faces[i].vert3.x, obj.faces[i].vert3.y, obj.faces[i].vert3.z);
   }
   glEnd();
@@ -401,7 +408,6 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glTranslatef(0, posy, posz); //
   glRotatef(-90, 1, 0, 0);
   desenhaObjeto(submarino, 100);
-  cout << submarino.normais[0].nx << endl;
   glPopMatrix();
 
   glPushMatrix();                   // oceano, representado por um cubo com centro em -50
