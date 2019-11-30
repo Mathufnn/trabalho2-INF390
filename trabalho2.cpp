@@ -3,6 +3,134 @@
 using namespace std;
 #define PI 3.14159265
 
+GLuint texture[3];
+
+struct Image
+{
+  unsigned long sizeX;
+  unsigned long sizeY;
+  char *data;
+};
+
+typedef struct Image Image;
+
+#define checkImageWidth 64
+#define checkImageHeight 64
+
+float xrot;
+float yrot;
+float zrot;
+float ratio;
+
+int ImageLoad(char *filename, Image *image)
+{
+  FILE *file;
+  unsigned size;             // size of the image in bytes.
+  unsigned long i;           // standard counter.
+  unsigned short int planes; // number of planes in image (must be 1)
+  unsigned short int bpp;    // number of bits per pixel (must be 24)
+
+  char temp; // temporary color storage for bgr-rgb conversion.
+  // make sure the file is there.
+
+  if ((file = fopen(filename, "rb")) == NULL)
+  {
+    printf("File Not Found : %s\n", filename);
+    return 0;
+  }
+
+  // seek through the bmp header, up to the width/height:
+  fseek(file, 18, SEEK_CUR);
+
+  // read the width
+  if ((i = fread(&image->sizeX, 4, 1, file)) != 1)
+  {
+    printf("Error reading width from %s.\n", filename);
+    return 0;
+  }
+  //printf("Width of %s: %lu\n", filename, image->sizeX);
+
+  // read the height
+  if ((i = fread(&image->sizeY, 4, 1, file)) != 1)
+  {
+    printf("Error reading height from %s.\n", filename);
+    return 0;
+  }
+  //printf("Height of %s: %lu\n", filename, image->sizeY);
+  // calculate the size (assuming 24 bits or 3 bytes per pixel).
+
+  size = image->sizeX * image->sizeY * 3;
+  // read the planes
+  if ((fread(&planes, 2, 1, file)) != 1)
+  {
+    printf("Error reading planes from %s.\n", filename);
+    return 0;
+  }
+
+  if (planes != 1)
+  {
+    printf("Planes from %s is not 1: %u\n", filename, planes);
+    return 0;
+  }
+
+  // read the bitsperpixel
+
+  if ((i = fread(&bpp, 2, 1, file)) != 1)
+  {
+    printf("Error reading bpp from %s.\n", filename);
+    return 0;
+  }
+
+  if (bpp != 24)
+  {
+    printf("Bpp from %s is not 24: %u\n", filename, bpp);
+    return 0;
+  }
+  // seek past the rest of the bitmap header.
+
+  fseek(file, 24, SEEK_CUR);
+
+  // read the data.
+  image->data = (char *)malloc(size);
+  if (image->data == NULL)
+  {
+    printf("Error allocating memory for color-corrected image data");
+    return 0;
+  }
+  if ((i = fread(image->data, size, 1, file)) != 1)
+  {
+    printf("Error reading image data from %s.\n", filename);
+    return 0;
+  }
+  for (i = 0; i < size; i += 3)
+  { // reverse all of the colors. (bgr -> rgb)
+    temp = image->data[i];
+    image->data[i] = image->data[i + 2];
+    image->data[i + 2] = temp;
+  }
+  // we're done.
+  return 1;
+}
+
+Image *loadTexture(char *file_name)
+{
+  Image *image_aux;
+  // allocate space for texture
+  image_aux = (Image *)malloc(sizeof(Image));
+  if (image_aux == NULL)
+  {
+    printf("Error allocating space for image");
+    exit(0);
+  }
+
+  if (!ImageLoad(file_name, image_aux))
+  {
+    exit(1);
+  }
+
+  return image_aux;
+}
+
 struct vertice // struct responsavel por armazenar pontos no espaco 3d
 {              //
   double x, y, z;
@@ -140,7 +268,7 @@ objeto3d leObjeto(string arquivo) // parser de arquivos .obj, separa cada linha 
 //
 //-------------------------------------------------------------------------------------------------------
 
-char title[] = "Yellow submarine";
+char title[] = "Psychedelic submarine";
 GLint rotacao = 0;                                         // armazena rotacao atual do submarino
 bool rodarSentidoHorario = 0, rodarSentidoAntiHorario = 0; // armazenam estado do botao de virar a visao
 bool andarPraFrente = 0, andarPraTras = 0;                 // armazena estado do botao de frente/re
@@ -222,6 +350,16 @@ void iniciaPosicoesAleatorias() // inicia posicoes aleatorias de objetos no mapa
 
 void initGL()
 {
+  Image *image1 = loadTexture("psychedelic.bmp");
+  glGenTextures(3, texture); // define o numero de texturas
+
+  glBindTexture(GL_TEXTURE_2D, texture[0]);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //scale linearly when image bigger than texture
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //scale linearly when image smalled than texture
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, image1->sizeX, image1->sizeY, 0,
+               GL_RGB, GL_UNSIGNED_BYTE, image1->data);
+  glTexEnvf(GL_TEXTURE_ENV, GL_BLEND, GL_DECAL);
+
   glClearColor(0, 1, 1, 0.3);  // cor para limpeza do buffer, céu
   glMatrixMode(GL_PROJECTION); //
   glLoadIdentity();            //
@@ -231,11 +369,9 @@ void initGL()
   glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);
 
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  glEnable(GL_LIGHT1);
-
+  glEnable(GL_COLOR_MATERIAL);
   glEnable(GL_NORMALIZE);
+  glEnable(GL_TEXTURE_2D);
 }
 
 void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os sinais de teclado
@@ -251,7 +387,7 @@ void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os si
     if (rotacao < 0)
       rotacao = 360;
   }
-  else if (andarPraFrente)
+  if (andarPraFrente)
   {
     posz -= 0.1;
   }
@@ -259,12 +395,12 @@ void timerMovimentacaoSubmarino(int tempo) // funcao responsavel por pegar os si
   {
     posz += 0.1;
   }
-  else if (subir)
+  if (subir)
   {
     if (posy < 0)
       posy += 0.1;
   }
-  else if (descer)
+  if (descer)
   {
     posy -= 0.1;
   }
@@ -299,31 +435,30 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
     glutPostRedisplay();
   }
 
-  else if (key == 'L' || key == 'l' || key == '1'|| key == '2')
+  else if (key == 'L' || key == 'l' || key == '1' || key == '2')
   {
 
-
-
-    if (key == 'L' || key == 'l'){
+    if (key == 'L' || key == 'l')
+    {
       cout << "entrou" << endl;
       iluminacao = !iluminacao;
     }
 
-    if (key == '1'){
+    if (key == '1')
+    {
       luz_1 = !luz_1;
       cout << "luz1" << endl;
     }
 
-    if (key == '2'){
+    if (key == '2')
+    {
       luz_2 = !luz_2;
-            cout << "luz2" << endl;
-
+      cout << "luz2" << endl;
     }
 
     if (iluminacao)
     {
       glEnable(GL_LIGHTING);
-      glEnable(GL_COLOR_MATERIAL);
 
       if (luz_1)
       {
@@ -348,13 +483,14 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
     else
     {
       glDisable(GL_LIGHTING);
-    
     }
 
-        cout << key << endl;
-    cout << "L" << " " << iluminacao << endl;
+    cout << key << endl;
+    cout << "L"
+         << " " << iluminacao << endl;
     cout << '1' << " " << luz_1 << endl;
-    cout << '2' << " " << luz_2 << endl << endl;
+    cout << '2' << " " << luz_2 << endl
+         << endl;
 
     glutPostRedisplay();
   }
@@ -368,8 +504,6 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
       glShadeModel(GL_SMOOTH);
     glutPostRedisplay();
   }
-
-
 }
 
 void keyboardEspecial(int key, int x, int y) // trata eventos de pressionar teclas de seta
@@ -432,12 +566,15 @@ void desenhaObjeto(objeto3d &obj, GLdouble multiplicador) // funcao responsavel 
   for (int i = 0; i < obj.faces.size(); i++)
   {
     glNormal3f(obj.faces[i].norm1.nx, obj.faces[i].norm1.ny, obj.faces[i].norm1.nz);
+    glTexCoord2f(obj.faces[i].text1.tx, obj.faces[i].text1.ty);
     glVertex3f(obj.faces[i].vert1.x, obj.faces[i].vert1.y, obj.faces[i].vert1.z);
 
     glNormal3f(obj.faces[i].norm2.nx, obj.faces[i].norm2.ny, obj.faces[i].norm2.nz);
+    glTexCoord2f(obj.faces[i].text2.tx, obj.faces[i].text2.ty);
     glVertex3f(obj.faces[i].vert2.x, obj.faces[i].vert2.y, obj.faces[i].vert2.z);
 
     glNormal3f(obj.faces[i].norm3.nx, obj.faces[i].norm3.ny, obj.faces[i].norm3.nz);
+    glTexCoord2f(obj.faces[i].text3.tx, obj.faces[i].text3.ty);
     glVertex3f(obj.faces[i].vert3.x, obj.faces[i].vert3.y, obj.faces[i].vert3.z);
   }
   glEnd();
@@ -448,19 +585,19 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
-  lightpos1[0] = posx;
+  // posicao em que a luz esta
+  lightpos2[0] = 0;
+  lightpos2[1] = posy + 1;
+  lightpos2[2] = posz + 3;
+  lightpos2[3] = 1;
+
+  lightpos1[0] = 0; // posicao para a qual a luz aponta
   lightpos1[1] = posy;
   lightpos1[2] = posz;
   lightpos1[3] = 1;
 
-  lightpos2[0] = 0;
-  lightpos2[1] = posy + 3;
-  lightpos2[2] = posy + 3;
-  lightpos2[3] = 1;
-
-  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
-  glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
-  glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, lightpos1);
+  // glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
+  // glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, lightpos1);
 
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
@@ -476,7 +613,7 @@ void display() // responsavel por exibir os elementos do jogo na tela
   // cout << lightpos1[0] << " " << lightpos1[1] << " " << lightpos1[2] << endl;
 
   glPushMatrix();              // exibe o submarino, transladado no eixo y
-  glColor4f(1, 1, 0, 1);       // e no eixo z para representar seu deslocamento
+  glColor4f(1, 1, 1, 1);       // e no eixo z para representar seu deslocamento
   glTranslatef(0, posy, posz); //
   glRotatef(-90, 1, 0, 0);
   desenhaObjeto(submarino, 100);
@@ -499,7 +636,8 @@ void display() // responsavel por exibir os elementos do jogo na tela
   }
 
   glPushMatrix(); // exibe navios em posicoes aleatorias na superficie do oceano
-  glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
+  // glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
+  glBindTexture(GL_TEXTURE_2D, texture[0]);
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
   desenhaObjeto(navio, 0.3);
