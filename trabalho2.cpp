@@ -167,6 +167,12 @@ GLdouble posy = 0.0;
 GLdouble posz = 0.0;
 GLdouble posicaoAtualSubmarinoX = 0.0;
 GLdouble posicaoAtualSubmarinoZ = 0.0;
+bool luz_1 = false;
+bool luz_2 = false;
+
+GLfloat lightpos0[] = {0., 0., 0, 1};
+GLfloat lightpos1[] = {0, 0, 0, 1};
+GLfloat lightpos2[] = {0, posy + 3, posz + 3, 1};
 
 void escreve() // funcao responsavel por escrever texto na tela
 {
@@ -224,8 +230,11 @@ void initGL()
   gluPerspective(45.0f, 1, 0.1f, 100.0f);
   glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);
-  GLfloat lightpos[] = {0., 1., 0., 1.};
-  glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glEnable(GL_LIGHT1);
+
   glEnable(GL_NORMALIZE);
 }
 
@@ -289,22 +298,67 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
     ajuda = !ajuda;
     glutPostRedisplay();
   }
-  else if (key == 'L' || key == 'l')
+
+  else if (key == 'L' || key == 'l' || key == '1'|| key == '2')
   {
-    iluminacao = !iluminacao;
+
+
+
+    if (key == 'L' || key == 'l'){
+      cout << "entrou" << endl;
+      iluminacao = !iluminacao;
+    }
+
+    if (key == '1'){
+      luz_1 = !luz_1;
+      cout << "luz1" << endl;
+    }
+
+    if (key == '2'){
+      luz_2 = !luz_2;
+            cout << "luz2" << endl;
+
+    }
+
     if (iluminacao)
     {
       glEnable(GL_LIGHTING);
-      glEnable(GL_LIGHT0);
       glEnable(GL_COLOR_MATERIAL);
+
+      if (luz_1)
+      {
+        glEnable(GL_LIGHT0);
+      }
+
+      if (luz_2)
+      {
+        glEnable(GL_LIGHT1);
+      }
+
+      if (!luz_1)
+      {
+        glDisable(GL_LIGHT0);
+      }
+
+      if (!luz_2)
+      {
+        glDisable(GL_LIGHT1);
+      }
     }
     else
     {
       glDisable(GL_LIGHTING);
-      glDisable(GL_LIGHT0);
-      glDisable(GL_COLOR_MATERIAL);
+    
     }
+
+        cout << key << endl;
+    cout << "L" << " " << iluminacao << endl;
+    cout << '1' << " " << luz_1 << endl;
+    cout << '2' << " " << luz_2 << endl << endl;
+
+    glutPostRedisplay();
   }
+
   else if (key == 'G' || key == 'g')
   {
     shading = !shading;
@@ -314,6 +368,8 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
       glShadeModel(GL_SMOOTH);
     glutPostRedisplay();
   }
+
+
 }
 
 void keyboardEspecial(int key, int x, int y) // trata eventos de pressionar teclas de seta
@@ -392,6 +448,20 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
+  lightpos1[0] = posx;
+  lightpos1[1] = posy;
+  lightpos1[2] = posz;
+  lightpos1[3] = 1;
+
+  lightpos2[0] = 0;
+  lightpos2[1] = posy + 3;
+  lightpos2[2] = posy + 3;
+  lightpos2[3] = 1;
+
+  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
+  glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
+  glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, lightpos1);
+
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
 
@@ -402,6 +472,8 @@ void display() // responsavel por exibir os elementos do jogo na tela
 
   if (ajuda)   // exibe menu de ajuda
     escreve(); //
+
+  // cout << lightpos1[0] << " " << lightpos1[1] << " " << lightpos1[2] << endl;
 
   glPushMatrix();              // exibe o submarino, transladado no eixo y
   glColor4f(1, 1, 0, 1);       // e no eixo z para representar seu deslocamento
