@@ -25,13 +25,12 @@ float ratio;
 int ImageLoad(char *filename, Image *image)
 {
   FILE *file;
-  unsigned size;             // size of the image in bytes.
-  unsigned long i;           // standard counter.
-  unsigned short int planes; // number of planes in image (must be 1)
-  unsigned short int bpp;    // number of bits per pixel (must be 24)
+  unsigned size;
+  unsigned long i;
+  unsigned short int planes;
+  unsigned short int bpp;
 
-  char temp; // temporary color storage for bgr-rgb conversion.
-  // make sure the file is there.
+  char temp;
 
   if ((file = fopen(filename, "rb")) == NULL)
   {
@@ -39,28 +38,21 @@ int ImageLoad(char *filename, Image *image)
     return 0;
   }
 
-  // seek through the bmp header, up to the width/height:
   fseek(file, 18, SEEK_CUR);
 
-  // read the width
   if ((i = fread(&image->sizeX, 4, 1, file)) != 1)
   {
     printf("Error reading width from %s.\n", filename);
     return 0;
   }
-  //printf("Width of %s: %lu\n", filename, image->sizeX);
 
-  // read the height
   if ((i = fread(&image->sizeY, 4, 1, file)) != 1)
   {
     printf("Error reading height from %s.\n", filename);
     return 0;
   }
-  //printf("Height of %s: %lu\n", filename, image->sizeY);
-  // calculate the size (assuming 24 bits or 3 bytes per pixel).
 
   size = image->sizeX * image->sizeY * 3;
-  // read the planes
   if ((fread(&planes, 2, 1, file)) != 1)
   {
     printf("Error reading planes from %s.\n", filename);
@@ -73,8 +65,6 @@ int ImageLoad(char *filename, Image *image)
     return 0;
   }
 
-  // read the bitsperpixel
-
   if ((i = fread(&bpp, 2, 1, file)) != 1)
   {
     printf("Error reading bpp from %s.\n", filename);
@@ -86,11 +76,9 @@ int ImageLoad(char *filename, Image *image)
     printf("Bpp from %s is not 24: %u\n", filename, bpp);
     return 0;
   }
-  // seek past the rest of the bitmap header.
 
   fseek(file, 24, SEEK_CUR);
 
-  // read the data.
   image->data = (char *)malloc(size);
   if (image->data == NULL)
   {
@@ -103,19 +91,17 @@ int ImageLoad(char *filename, Image *image)
     return 0;
   }
   for (i = 0; i < size; i += 3)
-  { // reverse all of the colors. (bgr -> rgb)
+  {
     temp = image->data[i];
     image->data[i] = image->data[i + 2];
     image->data[i + 2] = temp;
   }
-  // we're done.
   return 1;
 }
 
 Image *loadTexture(char *file_name)
 {
   Image *image_aux;
-  // allocate space for texture
   image_aux = (Image *)malloc(sizeof(Image));
   if (image_aux == NULL)
   {
@@ -277,13 +263,13 @@ bool vistaDeFora = 1;                                      // ponto de vista de 
 bool ajuda = 0;                                            // ligar/desligar menu de ajuda
 bool iluminacao = 0;
 bool shading = 0;
-objeto3d submarino = leObjeto("submarine.obj"); // armazenam objetos lidos e retornados pelo parser
-// objeto3d cavalo = leObjeto("cavalo.obj");
-objeto3d navio = leObjeto("navio.obj");
-// objeto3d leao = leObjeto("leao_marinho.obj");
-objeto3d peixe = leObjeto("fish.obj");
-// objeto3d peixe_espada = leObjeto("peixe_espada.obj");
-// objeto3d tubarao_martelo = leObjeto("tubarao_martelo.obj");
+objeto3d submarino = leObjeto("Objects/submarine.obj"); // armazenam objetos lidos e retornados pelo parser
+// objeto3d cavalo = leObjeto("Objects/cavalo.obj");
+objeto3d navio = leObjeto("Objects/navio.obj");
+// objeto3d leao = leObjeto("Objects/leao_marinho.obj");
+objeto3d peixe = leObjeto("Objects/fish.obj");
+// objeto3d peixe_espada = leObjeto("Objects/peixe_espada.obj");
+// objeto3d tubarao_martelo = leObjeto("Objects/tubarao_martelo.obj");
 int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
 int y_peixe[100];
 int z_peixe[100];
@@ -350,7 +336,7 @@ void iniciaPosicoesAleatorias() // inicia posicoes aleatorias de objetos no mapa
 
 void initGL()
 {
-  Image *image1 = loadTexture("psychedelic.bmp");
+  Image *image1 = loadTexture("Objects/Maps/psychedelic.bmp");
   glGenTextures(3, texture); // define o numero de texturas
 
   glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -440,20 +426,17 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
 
     if (key == 'L' || key == 'l')
     {
-      cout << "entrou" << endl;
       iluminacao = !iluminacao;
     }
 
     if (key == '1')
     {
       luz_1 = !luz_1;
-      cout << "luz1" << endl;
     }
 
     if (key == '2')
     {
       luz_2 = !luz_2;
-      cout << "luz2" << endl;
     }
 
     if (iluminacao)
