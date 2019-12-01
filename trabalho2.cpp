@@ -276,9 +276,9 @@ int z_peixe[100];
 int x_navio[10]; // posicoes do navio
 int z_navio[10];
 int rot_navio[10];
-GLdouble posx = 0.0; // posição que será usada para referência para câmera
-GLdouble posy = 0.0;
-GLdouble posz = 0.0;
+GLfloat posx = 0.0; // posição que será usada para referência para câmera
+GLfloat posy = 0.0;
+GLfloat posz = 0.0;
 GLdouble posicaoAtualSubmarinoX = 0.0;
 GLdouble posicaoAtualSubmarinoZ = 0.0;
 bool luz_1 = false;
@@ -355,7 +355,9 @@ void initGL()
   glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0f);
 
+  glEnable(GL_LIGHTING);
   glEnable(GL_COLOR_MATERIAL);
+
   glEnable(GL_NORMALIZE);
   glEnable(GL_TEXTURE_2D);
 }
@@ -450,7 +452,7 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
 
       if (luz_2)
       {
-        glEnable(GL_LIGHT1);
+        glEnable(GL_LIGHT3);
       }
 
       if (!luz_1)
@@ -460,7 +462,7 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
 
       if (!luz_2)
       {
-        glDisable(GL_LIGHT1);
+        glDisable(GL_LIGHT3);
       }
     }
     else
@@ -568,19 +570,19 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
-  // posicao em que a luz esta
-  lightpos2[0] = 0;
-  lightpos2[1] = posy + 1;
-  lightpos2[2] = posz + 3;
-  lightpos2[3] = 1;
+  GLfloat lightpos0[] = {1., 1., 1, 1};
+  GLfloat lightpos1[] = {1, 1, 1, 1};
+  GLfloat lightpos2[] = {posx, posy + 5, posz + 5, 1};
+  GLfloat lightpos3[] = {posx, posy, posz};
+  cout << lightpos2[0] << " " << lightpos2[1] << " " << lightpos2[2] << endl;
 
-  lightpos1[0] = 0; // posicao para a qual a luz aponta
-  lightpos1[1] = posy;
-  lightpos1[2] = posz;
-  lightpos1[3] = 1;
+  cout << lightpos3[0] << " " << lightpos3[1] << " " << lightpos3[2] << endl
+       << endl;
 
-  // glLightfv(GL_LIGHT1, GL_POSITION, lightpos2);
-  // glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, lightpos1);
+  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
+  glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
+  glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
+  glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
 
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
