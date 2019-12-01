@@ -572,9 +572,12 @@ void display() // responsavel por exibir os elementos do jogo na tela
 
   GLfloat lightpos0[] = {1., 1., 1, 1};
   GLfloat lightpos1[] = {1, 1, 1, 1};
-  GLfloat lightpos2[] = {posx, posy + 5, posz + 5, 1};
+  GLfloat lightpos2[] = {posx, posy + 1, posz + 1, 1};
   GLfloat lightpos3[] = {posx, posy, posz};
-  cout << lightpos2[0] << " " << lightpos2[1] << " " << lightpos2[2] << endl;
+
+      glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
+
+  /*cout << lightpos2[0] << " " << lightpos2[1] << " " << lightpos2[2] << endl;
 
   cout << lightpos3[0] << " " << lightpos3[1] << " " << lightpos3[2] << endl
        << endl;
@@ -583,7 +586,7 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
   glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
   glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
-
+*/
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
 
@@ -639,6 +642,15 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
+
+  glPushMatrix();
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
+    glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
+    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
+    GLfloat atenuacao[] = {0.1};
+    glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
+
+  glPopMatrix();
   // // leão marinho
   // glPushMatrix();
   // glColor3f(0.4, 0, 0.3);
