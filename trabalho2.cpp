@@ -264,10 +264,11 @@ bool ajuda = 0;                                            // ligar/desligar men
 bool iluminacao = 0;
 bool shading = 0;
 objeto3d submarino = leObjeto("Objects/submarine.obj"); // armazenam objetos lidos e retornados pelo parser
-// objeto3d cavalo = leObjeto("Objects/cavalo.obj");
+objeto3d oceano = leObjeto("Objects/cube.obj");
 objeto3d navio = leObjeto("Objects/navio.obj");
-// objeto3d leao = leObjeto("Objects/leao_marinho.obj");
 objeto3d peixe = leObjeto("Objects/fish.obj");
+// objeto3d cavalo = leObjeto("Objects/cavalo.obj");
+// objeto3d leao = leObjeto("Objects/leao_marinho.obj");
 // objeto3d peixe_espada = leObjeto("Objects/peixe_espada.obj");
 // objeto3d tubarao_martelo = leObjeto("Objects/tubarao_martelo.obj");
 int x_peixe[100]; // variaveis para guardar posicao aleatoria dos peixes
@@ -337,6 +338,8 @@ void iniciaPosicoesAleatorias() // inicia posicoes aleatorias de objetos no mapa
 void initGL()
 {
   Image *image1 = loadTexture("Objects/Maps/psychedelic.bmp");
+  Image *image2 = loadTexture("Objects/Maps/nemo.bmp");
+
   glGenTextures(3, texture); // define o numero de texturas
 
   glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -344,6 +347,13 @@ void initGL()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //scale linearly when image smalled than texture
   glTexImage2D(GL_TEXTURE_2D, 0, 3, image1->sizeX, image1->sizeY, 0,
                GL_RGB, GL_UNSIGNED_BYTE, image1->data);
+  glTexEnvf(GL_TEXTURE_ENV, GL_BLEND, GL_DECAL);
+
+  glBindTexture(GL_TEXTURE_2D, texture[1]);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //scale linearly when image bigger than texture
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //scale linearly when image smalled than texture
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, image2->sizeX, image2->sizeY, 0,
+               GL_RGB, GL_UNSIGNED_BYTE, image2->data);
   glTexEnvf(GL_TEXTURE_ENV, GL_BLEND, GL_DECAL);
 
   glClearColor(0, 1, 1, 0.3);  // cor para limpeza do buffer, céu
@@ -575,18 +585,8 @@ void display() // responsavel por exibir os elementos do jogo na tela
   GLfloat lightpos2[] = {posx, posy + 1, posz + 1, 1};
   GLfloat lightpos3[] = {posx, posy, posz};
 
-      glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
-
-  /*cout << lightpos2[0] << " " << lightpos2[1] << " " << lightpos2[2] << endl;
-
-  cout << lightpos3[0] << " " << lightpos3[1] << " " << lightpos3[2] << endl
-       << endl;
-
   glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
-  glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
-  glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
-  glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
-*/
+
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
 
@@ -600,6 +600,7 @@ void display() // responsavel por exibir os elementos do jogo na tela
 
   // cout << lightpos1[0] << " " << lightpos1[1] << " " << lightpos1[2] << endl;
 
+  glBindTexture(GL_TEXTURE_2D, texture[0]);
   glPushMatrix();              // exibe o submarino, transladado no eixo y
   glColor4f(1, 1, 1, 1);       // e no eixo z para representar seu deslocamento
   glTranslatef(0, posy, posz); //
@@ -608,11 +609,12 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glPopMatrix();
 
   glPushMatrix();                   // oceano, representado por um cubo com centro em -50
-  glColor4f(0.0f, 0.0f, 1.0f, 0.3); //
+  glColor4f(0.0f, 1.0f, 1.0f, 0.3); //
   glTranslatef(0, -50, 0);
   glutSolidCube(100);
   glPopMatrix();
 
+  glBindTexture(GL_TEXTURE_2D, texture[1]);
   for (int i = 0; i < 100; i++) // exibe os peixes que aparecem em regioes aleatorias
   {                             // no fundo do oceano
     glPushMatrix();
@@ -623,9 +625,9 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
+  glBindTexture(GL_TEXTURE_2D, texture[0]);
   glPushMatrix(); // exibe navios em posicoes aleatorias na superficie do oceano
   // glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
-  glBindTexture(GL_TEXTURE_2D, texture[0]);
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
   desenhaObjeto(navio, 0.3);
@@ -642,15 +644,16 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
-
   glPushMatrix();
-    glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
-    glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
-    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
-    GLfloat atenuacao[] = {0.1};
-    glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
+  glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
+  glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
+  glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
+  GLfloat atenuacao[] = {0.1};
+  glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
 
   glPopMatrix();
+
+
   // // leão marinho
   // glPushMatrix();
   // glColor3f(0.4, 0, 0.3);
