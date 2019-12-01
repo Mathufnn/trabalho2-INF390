@@ -3,6 +3,8 @@
 using namespace std;
 #define PI 3.14159265
 
+// -------------------------------    PARSER DE BITMAP (extraído do material da INF 390)  ---------------------------------------------------------
+
 GLuint texture[3];
 
 struct Image
@@ -116,6 +118,10 @@ Image *loadTexture(char *file_name)
 
   return image_aux;
 }
+
+// -------------------------------   FIM DO PARSER DE BITMAP (extraído do material da INF 390)  ---------------------------------------------------------
+
+//  -------------------------------   PARSER DOS OBJETOS   ----------------------------------------------------------------------------------------------
 
 struct vertice // struct responsavel por armazenar pontos no espaco 3d
 {              //
@@ -301,6 +307,10 @@ void escreve() // funcao responsavel por escrever texto na tela
   texto.push_back("S ou s  -  Ré");
   texto.push_back("F ou f  -   Ponto de vista de fora do submarino");
   texto.push_back("I ou i  -   Ponto de vista de dentro do submarino");
+  texto.push_back("G ou g -  Ativa o modelo flat ou Gouraud");
+  texto.push_back("L ou l - Ativa ou desativa a iluminação");
+  texto.push_back("1 - Ativa o modo iluminação multidirecional (apenas com modo iluminação ligado)");
+  texto.push_back("2 - Ativa o modo luz direcional (apenas com modo iluminação ligado)");
   texto.push_back("H ou h   -   Apresentar/Ocultar um menu de ajuda (descrevendo os comandos do simulador)");
 
   float conty = 0.1;
@@ -480,12 +490,7 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
       glDisable(GL_LIGHTING);
     }
 
-    cout << key << endl;
-    cout << "L"
-         << " " << iluminacao << endl;
-    cout << '1' << " " << luz_1 << endl;
-    cout << '2' << " " << luz_2 << endl
-         << endl;
+
 
     glutPostRedisplay();
   }
@@ -580,12 +585,14 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
-  GLfloat lightpos0[] = {1., 1., 1, 1};
-  GLfloat lightpos1[] = {1, 1, 1, 1};
-  GLfloat lightpos2[] = {posx, posy + 1, posz + 1, 1};
-  GLfloat lightpos3[] = {posx, posy, posz};
 
-  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);
+  GLfloat lightpos0[] = {0.1, 0.1, 0.1, 0}; // Informações da luz ambiente (multidirecional)
+  GLfloat lightpos1[] = {1, 1, 1, 1}; // Informações da luz unidirecional
+  GLfloat lightpos2[] = {posx, posy + 1, posz + 1, 1};  // Posição da fonte de luz unidirecional
+  GLfloat lightpos3[] = {posx, posy, posz};   // Posição a qual a luz unidirecional está voltada
+
+
+  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);  // Luz multidirecional
 
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
@@ -598,7 +605,6 @@ void display() // responsavel por exibir os elementos do jogo na tela
   if (ajuda)   // exibe menu de ajuda
     escreve(); //
 
-  // cout << lightpos1[0] << " " << lightpos1[1] << " " << lightpos1[2] << endl;
 
   glBindTexture(GL_TEXTURE_2D, texture[0]);
   glPushMatrix();              // exibe o submarino, transladado no eixo y
@@ -618,16 +624,19 @@ void display() // responsavel por exibir os elementos do jogo na tela
   for (int i = 0; i < 100; i++) // exibe os peixes que aparecem em regioes aleatorias
   {                             // no fundo do oceano
     glPushMatrix();
-    glColor3f(1, 0, 0);
+    glColor3f(1, 0.5, 0);
     glRotatef(rotacao, 0, 1, 0);
     glTranslatef(x_peixe[i], y_peixe[i], z_peixe[i]);
     desenhaObjeto(peixe, 1);
     glPopMatrix();
   }
 
+
+
+
+  glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
   glBindTexture(GL_TEXTURE_2D, texture[0]);
   glPushMatrix(); // exibe navios em posicoes aleatorias na superficie do oceano
-  // glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
   glRotatef(rotacao, 0, 1, 0);
   glTranslatef(2, 0, -3);
   desenhaObjeto(navio, 0.3);
@@ -644,47 +653,17 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
-  glPushMatrix();
-  glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
-  glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
-  glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
-  GLfloat atenuacao[] = {0.1};
-  glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
 
+  // Inserção da luz unidimensional 
+
+  glPushMatrix();
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
+    glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
+    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
+    GLfloat atenuacao[] = {0.1};
+    glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
   glPopMatrix();
 
-
-  // // leão marinho
-  // glPushMatrix();
-  // glColor3f(0.4, 0, 0.3);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(4, -5, 5);
-  // desenhaObjeto(leao, 400);
-  // glPopMatrix();
-
-  // //cavalo marinho
-  // glPushMatrix();
-  // glColor3f(0.5, 1, 0.5);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(2, -2, 5);
-  // desenhaObjeto(cavalo, 200);
-  // glPopMatrix();
-
-  // //peixe espada
-  // glPushMatrix();
-  // glColor3f(0, 0.5, 1);
-  // glRotatef(rotacao, 0, 2, 0);
-  // glTranslatef(1, -4, 4);
-  // desenhaObjeto(peixe_espada, 200);
-  // glPopMatrix();
-
-  // // tubarao martelo
-  // glPushMatrix();
-  // glColor3f(1, 0.5, 1);
-  // glRotatef(rotacao, 0, 1, 0);
-  // glTranslatef(2, -2, 3);
-  // desenhaObjeto(tubarao_martelo, 200);
-  // glPopMatrix();
 
   glutSwapBuffers(); // troca o double buffer para exibir a imagem mais rapidamente na tela
 }

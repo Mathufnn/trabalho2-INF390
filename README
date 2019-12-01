@@ -1,26 +1,23 @@
-INF390 - Trabalho 2
+INF390 - Trabalho 3
 
 Alunos:
 Matheus Ferreira Nunes - 92537
 Mayke Daniel de Oliveira Moreira - 82873
 
 Fontes de consultas utilizadas:
-
-http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
-https://stackoverflow.com/questions/19883715/what-is-the-best-way-to-split-string-c
-https://www.geeksforgeeks.org/getline-string-c/
-https://free3d.com/3d-models/submarine - modelo do submarino
-https://www.ntu.edu.sg/home/ehchua/programming/opengl/CG_Examples.html - piramide e coisas em 3d
-http://hohohuhu.blogspot.com/2011/03/opengl-timer-function.html - implementacao do timer
-https://www.codemiles.com/c-opengl-examples/draw-3d-cube-using-opengl-t9018.html - desenho do cubo usando quads
-https://www.gamedev.net/forums/topic/558527-glut-function-for-detecting-when-key-is-held-down/
-http://jeromebelleman.gitlab.io/posts/devops/gltext/
-https://community.khronos.org/t/glutsolidcube-has-anyone-used-this/30997/4
-https://community.khronos.org/t/color-tables/22518
-https://www.inf.pucrs.br/~manssour/OpenGL/Programando3D.html
+https://community.khronos.org/t/moving-a-light-source/68725
+https://stackoverflow.com/questions/19101161/how-to-set-position-of-light-source-in-opengl
+https://www.cse.msu.edu/~cse872/tutorial3.html
+http://jerome.jouvie.free.fr/opengl-tutorials/Tutorial13.php
+https://www.khronos.org/opengl/wiki/How_lighting_works
+https://learnopengl.com/Lighting/Light-casters
+https://www.khronos.org/opengl/wiki/File:Opengl_lighting_flowchart.png
+https://community.khronos.org/t/light-does-not-work/62599/2
+https://www.swiftless.com/tutorials/opengl/lighting_types.html
+https://www.youtube.com/watch?v=tmCOMzAA4rc
 
 Slides de INF 390
 Consulta ao monitor Gustavo
-Discussão com os alunos Leandro, Westerley, e Amanda
+Discutimos sobre o trabalho com os alunos: Leandro, Westerley, David e Amanda.
 
-Informações adicionais do jogo: Fauna marinha exótica adicionada
+

@@ -1,5 +1,5 @@
-main.out: trabalho2.o
-	g++ trabalho2.o -lglut -lGLU -lGL -o main.out
+main.out: trabalho3.o
+	g++ trabalho3.o -lglut -lGLU -lGL -o main.out
 
 trabalho2.o:
-	g++ -c trabalho2.cpp
+	g++ -c trabalho3.cpp
