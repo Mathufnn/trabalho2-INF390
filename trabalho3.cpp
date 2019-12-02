@@ -267,8 +267,10 @@ bool andarPraFrente = 0, andarPraTras = 0;                 // armazena estado do
 bool subir = 0, descer = 0;                                // armazena estado do botao de mover verticalmente
 bool vistaDeFora = 1;                                      // ponto de vista de dentro ou fora do submarino
 bool ajuda = 0;                                            // ligar/desligar menu de ajuda
-bool iluminacao = 0;
-bool shading = 0;
+bool iluminacao = 0;                                       // ligar/desligar iluminacao
+bool shading = 0;                                          // ligar/desligar shading
+bool trab3 = true;                                         // ligar/desligar informações sobre o trabalho 3
+
 objeto3d submarino = leObjeto("Objects/submarine.obj"); // armazenam objetos lidos e retornados pelo parser
 objeto3d oceano = leObjeto("Objects/cube.obj");
 objeto3d navio = leObjeto("Objects/navio.obj");
@@ -314,6 +316,76 @@ void escreve() // funcao responsavel por escrever texto na tela
   texto.push_back("H ou h   -   Apresentar/Ocultar um menu de ajuda (descrevendo os comandos do simulador)");
 
   float conty = 0.1;
+  for (int j = 0; j < texto.size(); j++) // realiza as transformacoes necessarias para exibir o texto
+  {
+    glPushMatrix();
+    glColor3f(1, 0, 0);
+    glTranslatef(posx - 1, posy + 1.1 - conty, posz);
+    glScalef(1 / 3500.38, 1 / 3500.38, 1 / 3500.38);
+    for (int i = 0; i < texto[j].size(); i++)
+    {
+      glutStrokeCharacter(GLUT_STROKE_ROMAN, texto[j][i]);
+    }
+    glPopMatrix();
+    conty += 0.05;
+  }
+}
+
+void escrevet3(int msg) // funcao responsavel por escrever texto na tela
+{
+  vector<string> texto; // vetor que armazena strings que aparecerao na tela
+  float conty = 0;
+
+
+  if (msg == 1)
+  {  
+    texto.push_back("Pressione X ou x para desativar informacoes sobre o trabalho 3");
+    texto.push_back("Modo iluminacao ativado");
+
+    conty += 0.15;
+  }
+  if (msg == 2){
+    texto.push_back("Pressione X ou x para desativar informacoes sobre o trabalho 3");
+
+    texto.push_back("Modo iluminacao desativado");
+    conty += 0.15;
+  }
+
+  if (msg == 3)
+  {
+    texto.push_back("Modo iluminacao multidirecional ativado");
+    conty += 0.25;
+  }
+  if (msg == 4)
+  {
+    texto.push_back("Modo iluminacao multidirecional desativado");
+    conty += 0.25;
+  }
+
+  if (msg == 5)
+  {
+    texto.push_back("Modo iluminacao unidirecional ativado");
+    conty += 0.3;
+  }
+
+  if (msg == 6)
+  {
+    texto.push_back("Modo iluminacao unidirecional desativado");
+    conty += 0.3;
+  }
+
+  if (msg == 7)
+  {
+    texto.push_back("Modo flat ativado");
+    conty += 0.35;
+  }
+
+  if (msg == 8)
+  {
+    texto.push_back("Modo Gouraud ativado");
+    conty += 0.35;
+  }
+
   for (int j = 0; j < texto.size(); j++) // realiza as transformacoes necessarias para exibir o texto
   {
     glPushMatrix();
@@ -443,6 +515,12 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
     glutPostRedisplay();
   }
 
+  else if (key == 'X' || key == 'x')
+  {
+    trab3 = !trab3;
+    glutPostRedisplay();
+  }
+
   else if (key == 'L' || key == 'l' || key == '1' || key == '2')
   {
 
@@ -464,33 +542,37 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
     if (iluminacao)
     {
       glEnable(GL_LIGHTING);
+      escrevet3(1);
 
       if (luz_1)
       {
         glEnable(GL_LIGHT0);
+        escrevet3(3);
       }
 
       if (luz_2)
       {
         glEnable(GL_LIGHT3);
+        escrevet3(5);
       }
 
       if (!luz_1)
       {
         glDisable(GL_LIGHT0);
+        escrevet3(4);
       }
 
       if (!luz_2)
       {
         glDisable(GL_LIGHT3);
+        escrevet3(6);
       }
     }
     else
     {
+      escrevet3(2);
       glDisable(GL_LIGHTING);
     }
-
-
 
     glutPostRedisplay();
   }
@@ -499,9 +581,15 @@ void keyboardNormal(unsigned char key, int x, int y) // trata eventos do teclado
   {
     shading = !shading;
     if (shading)
+    {
       glShadeModel(GL_FLAT);
+      escrevet3(7);
+    }
     else
+    {
       glShadeModel(GL_SMOOTH);
+      escrevet3(8);
+    }
     glutPostRedisplay();
   }
 }
@@ -585,14 +673,12 @@ void display() // responsavel por exibir os elementos do jogo na tela
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
+  GLfloat lightpos0[] = {0.1, 0.1, 0.1, 0};            // Informações da luz ambiente (multidirecional)
+  GLfloat lightpos1[] = {1, 1, 1, 1};                  // Informações da luz unidirecional
+  GLfloat lightpos2[] = {posx, posy + 1, posz + 1, 1}; // Posição da fonte de luz unidirecional
+  GLfloat lightpos3[] = {posx, posy, posz};            // Posição a qual a luz unidirecional está voltada
 
-  GLfloat lightpos0[] = {0.1, 0.1, 0.1, 0}; // Informações da luz ambiente (multidirecional)
-  GLfloat lightpos1[] = {1, 1, 1, 1}; // Informações da luz unidirecional
-  GLfloat lightpos2[] = {posx, posy + 1, posz + 1, 1};  // Posição da fonte de luz unidirecional
-  GLfloat lightpos3[] = {posx, posy, posz};   // Posição a qual a luz unidirecional está voltada
-
-
-  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0);  // Luz multidirecional
+  glLightfv(GL_LIGHT0, GL_AMBIENT, lightpos0); // Luz multidirecional
 
   // a camera do jogo segue o submarino nos seus movimentos de subir/descer e ir em frente/re,
   // ou seja, o acompanha no eixo y e eixo z
@@ -605,6 +691,50 @@ void display() // responsavel por exibir os elementos do jogo na tela
   if (ajuda)   // exibe menu de ajuda
     escreve(); //
 
+  else
+  { // informacoes sobre o trabalho 3
+
+    if (trab3)
+    {
+      if (iluminacao)
+      {
+        escrevet3(1);
+
+        if (luz_1)
+        {
+          escrevet3(3);
+        }
+
+        if (luz_2)
+        {
+          escrevet3(5);
+        }
+
+        if (!luz_1)
+        {
+          escrevet3(4);
+        }
+
+        if (!luz_2)
+        {
+          escrevet3(6);
+        }
+      }
+      else
+      {
+        escrevet3(2);
+      }
+
+      if (shading)
+      {
+        escrevet3(7);
+      }
+      else
+      {
+        escrevet3(8);
+      }
+    }
+  }
 
   glBindTexture(GL_TEXTURE_2D, texture[0]);
   glPushMatrix();              // exibe o submarino, transladado no eixo y
@@ -631,9 +761,6 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
-
-
-
   glColor4f((float)139 / 255, (float)69 / 255, (float)19 / 255, 1);
   glBindTexture(GL_TEXTURE_2D, texture[0]);
   glPushMatrix(); // exibe navios em posicoes aleatorias na superficie do oceano
@@ -653,17 +780,15 @@ void display() // responsavel por exibir os elementos do jogo na tela
     glPopMatrix();
   }
 
-
-  // Inserção da luz unidimensional 
+  // Inserção da luz unidimensional
 
   glPushMatrix();
-    glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
-    glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
-    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
-    GLfloat atenuacao[] = {0.1};
-    glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
+  glLightfv(GL_LIGHT3, GL_DIFFUSE, lightpos1);
+  glLightfv(GL_LIGHT3, GL_POSITION, lightpos2);
+  glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, lightpos3);
+  GLfloat atenuacao[] = {0.1};
+  glLightfv(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, atenuacao);
   glPopMatrix();
-
 
   glutSwapBuffers(); // troca o double buffer para exibir a imagem mais rapidamente na tela
 }
