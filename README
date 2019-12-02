@@ -22,6 +22,11 @@ Discutimos sobre o trabalho com os alunos: Leandro, Westerley, David e Amanda.
 
 
 Observações: 
--	O programa inicia com iluminação e efeitos de flat desativado.
+-	O programa inicia com iluminação desativada.
 -	Para ativar o modo de iluminação 1 ou 2 é necessário ativar o modo iluminação antes (pressionando L ou l).
+
+Adicionais:
+-	Para maior facilidade de uso do simulador, adicionamos informações na tela sobre as funcionalidades adicionadas no trabalho 3. O programa inicia com elas sendo exibidas mas podem serem omitidas pressionando a tecla 'X' ou 'x'.
+
+
 

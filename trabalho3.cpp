@@ -314,8 +314,10 @@ void escreve() // funcao responsavel por escrever texto na tela
   texto.push_back("1 - Ativa o modo iluminação multidirecional (apenas com modo iluminação ligado)");
   texto.push_back("2 - Ativa o modo luz direcional (apenas com modo iluminação ligado)");
   texto.push_back("H ou h   -   Apresentar/Ocultar um menu de ajuda (descrevendo os comandos do simulador)");
+    texto.push_back("X ou x   -   Apresentar/Ocultar um menu com dados do trabalho 3");
 
-  float conty = 0.1;
+
+  float conty = 0;
   for (int j = 0; j < texto.size(); j++) // realiza as transformacoes necessarias para exibir o texto
   {
     glPushMatrix();
@@ -331,7 +333,7 @@ void escreve() // funcao responsavel por escrever texto na tela
   }
 }
 
-void escrevet3(int msg) // funcao responsavel por escrever texto na tela
+void escrevet3(int msg) // funcao responsavel por escrever texto na tela dados sobre o trabalho 3
 {
   vector<string> texto; // vetor que armazena strings que aparecerao na tela
   float conty = 0;
@@ -692,7 +694,7 @@ void display() // responsavel por exibir os elementos do jogo na tela
     escreve(); //
 
   else
-  { // informacoes sobre o trabalho 3
+  { // tratamento de display para informacoes sobre o trabalho 3
 
     if (trab3)
     {
